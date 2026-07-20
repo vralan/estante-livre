@@ -23,7 +23,6 @@
                 <div class="hidden md:flex space-x-8 text-sm font-medium text-stone-600">
                     <a href="#" class="hover:text-amber-700 transition">Explorar Livros</a>
                     <a href="#" class="hover:text-amber-700 transition">Como Funciona</a>
-                    <a href="#" class="hover:text-amber-700 transition">Comunidade</a>
                 </div>
                 <div class="flex items-center space-x-4" id="navButtons">
                     <button onclick="openAuthModal('login')" class="text-sm font-medium text-stone-600 hover:text-stone-900">Entrar</button>
@@ -34,13 +33,13 @@
     </nav>
 
     <!-- Hero Section com Busca de Livros -->
-    <section class="max-w-4xl mx-auto text-center py-16 px-4">
+    <section class="max-w-4xl mx-auto text-center py-12 px-4">
         <h1 class="text-4xl sm:text-5xl font-extrabold text-stone-900 tracking-tight leading-tight mb-4">
             Doe os livros que já leu.<br/>
             <span class="text-amber-700">Descubra suas próximas histórias.</span>
         </h1>
         <p class="text-lg text-stone-600 mb-8 max-w-2xl mx-auto">
-            A plataforma de troca de livros livre, simples e colaborativa. Conecte-se com leitores de todo o Brasil e troque usando o sistema de créditos.
+            A plataforma de troca de livros livre, simples e colaborativa. Conecte-se com leitores de todo o Brasil e troque usando seus créditos.
         </p>
 
         <!-- Barra de Pesquisa Integrada à API -->
@@ -52,6 +51,16 @@
                 </button>
             </div>
             <p class="text-xs text-stone-400 mt-2">Busca automática via Google Books API</p>
+        </div>
+    </section>
+
+    <!-- Minha Estante (Visível quando Logado) -->
+    <section id="myShelfSection" class="hidden max-w-6xl mx-auto px-4 pb-8">
+        <div class="bg-amber-100/50 border border-amber-200 rounded-2xl p-6 mb-8">
+            <h2 class="text-xl font-bold text-stone-900 mb-4">📚 Minha Estante Virtual</h2>
+            <div id="myShelfGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <!-- Livros do usuário cadastrado entram aqui -->
+            </div>
         </div>
     </section>
 
@@ -109,9 +118,48 @@
         </div>
     </div>
 
-    <!-- Scripts -->
+    <!-- Scripts da Aplicação -->
     <script>
+        // Inicializar Supabase através das variáveis injetadas ou direct client
+        const supabaseUrl = window.env?.NEXT_PUBLIC_SUPABASE_URL || '';
+        const supabaseAnonKey = window.env?.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+        
+        let supabaseClient = null;
+        if (typeof supabase !== 'undefined' && supabaseUrl && supabaseAnonKey) {
+            supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
+        }
+
+        let currentUser = null;
         let currentAuthMode = 'login';
+
+        // Verificar Sessão ao Carregar
+        window.addEventListener('DOMContentLoaded', async () => {
+            if (supabaseClient) {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (session) {
+                    currentUser = session.user;
+                    updateUserUI();
+                    loadMyShelf();
+                }
+            }
+        });
+
+        function updateUserUI() {
+            const nav = document.getElementById('navButtons');
+            if (currentUser) {
+                nav.innerHTML = `
+                    <span class="text-xs font-medium text-stone-600">Olá, <strong class="text-amber-800">${currentUser.email.split('@')[0]}</strong></span>
+                    <button onclick="handleLogout()" class="text-xs text-red-600 hover:underline font-medium">Sair</button>
+                `;
+                document.getElementById('myShelfSection').classList.remove('hidden');
+            } else {
+                nav.innerHTML = `
+                    <button onclick="openAuthModal('login')" class="text-sm font-medium text-stone-600 hover:text-stone-900">Entrar</button>
+                    <button onclick="openAuthModal('signup')" class="bg-amber-700 hover:bg-amber-800 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-sm transition">Cadastrar</button>
+                `;
+                document.getElementById('myShelfSection').classList.add('hidden');
+            }
+        }
 
         function openAuthModal(mode) {
             currentAuthMode = mode;
@@ -140,8 +188,36 @@
             e.preventDefault();
             const email = document.getElementById('authEmail').value;
             const password = document.getElementById('authPassword').value;
-            alert(`Solicitação de ${currentAuthMode === 'login' ? 'Login' : 'Cadastro'} enviada para: ${email}`);
-            closeAuthModal();
+
+            if (!supabaseClient) {
+                alert("Erro: Conexão com Supabase não configurada.");
+                return;
+            }
+
+            try {
+                if (currentAuthMode === 'signup') {
+                    const { data, error } = await supabaseClient.auth.signUp({ email, password });
+                    if (error) throw error;
+                    alert('Conta criada com sucesso! Verifique seu e-mail ou faça login.');
+                } else {
+                    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                    if (error) throw error;
+                    currentUser = data.user;
+                    updateUserUI();
+                    loadMyShelf();
+                    closeAuthModal();
+                }
+            } catch (err) {
+                alert('Erro: ' + err.message);
+            }
+        }
+
+        async function handleLogout() {
+            if (supabaseClient) {
+                await supabaseClient.auth.signOut();
+                currentUser = null;
+                updateUserUI();
+            }
         }
 
         async function buscarLivros() {
@@ -169,6 +245,7 @@
                     const info = item.volumeInfo;
                     const thumbnail = info.imageLinks ? info.imageLinks.thumbnail : 'https://via.placeholder.com/128x192?text=Sem+Capa';
                     const authors = info.authors ? info.authors.join(', ') : 'Autor desconhecido';
+                    const bookId = item.id;
 
                     const cardHtml = `
                         <div class="bg-white p-4 rounded-xl shadow-sm border border-stone-100 flex flex-col justify-between hover:shadow-md transition">
@@ -177,7 +254,7 @@
                                 <h3 class="font-bold text-sm text-stone-900 line-clamp-1">${info.title}</h3>
                                 <p class="text-xs text-stone-500 mb-2 line-clamp-1">${authors}</p>
                             </div>
-                            <button onclick="openAuthModal('login')" class="w-full bg-amber-700 hover:bg-amber-800 text-white font-medium text-xs py-2 rounded-md transition mt-2">+ Adicionar à Estante</button>
+                            <button onclick="adicionarAEstante('${bookId}', '${escapeHtml(info.title)}', '${escapeHtml(authors)}', '${thumbnail}')" class="w-full bg-amber-700 hover:bg-amber-800 text-white font-medium text-xs py-2 rounded-md transition mt-2">+ Adicionar à Estante</button>
                         </div>
                     `;
                     grid.innerHTML += cardHtml;
@@ -185,6 +262,59 @@
             } catch (err) {
                 grid.innerHTML = '<p class="col-span-full text-center text-red-500 py-8">Erro ao buscar livros. Tente novamente.</p>';
             }
+        }
+
+        async function adicionarAEstante(bookId, title, authors, thumbnail) {
+            if (!currentUser) {
+                openAuthModal('login');
+                return;
+            }
+
+            try {
+                const { error } = await supabaseClient.from('user_books').insert({
+                    user_id: currentUser.id,
+                    google_book_id: bookId,
+                    title: title,
+                    authors: authors,
+                    thumbnail_url: thumbnail,
+                    status: 'TENHO'
+                });
+
+                if (error) throw error;
+                alert('Livro adicionado à sua estante com sucesso!');
+                loadMyShelf();
+            } catch (err) {
+                alert('Erro ao salvar livro: ' + err.message);
+            }
+        }
+
+        async function loadMyShelf() {
+            if (!currentUser || !supabaseClient) return;
+
+            const grid = document.getElementById('myShelfGrid');
+            grid.innerHTML = '<p class="col-span-full text-xs text-stone-500">Carregando sua estante...</p>';
+
+            const { data, error } = await supabaseClient.from('user_books').select('*').eq('user_id', currentUser.id);
+
+            if (error || !data || data.length === 0) {
+                grid.innerHTML = '<p class="col-span-full text-xs text-stone-500">Sua estante está vazia. Busque um livro e clique em "+ Adicionar".</p>';
+                return;
+            }
+
+            grid.innerHTML = '';
+            data.forEach(book => {
+                grid.innerHTML += `
+                    <div class="bg-white p-2 rounded-lg shadow-sm border border-amber-200 text-center">
+                        <img src="${book.thumbnail_url}" class="w-full h-32 object-cover rounded mb-2">
+                        <h4 class="font-bold text-xs text-stone-900 line-clamp-1">${book.title}</h4>
+                        <span class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-semibold mt-1 inline-block">Disponível</span>
+                    </div>
+                `;
+            });
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
         }
     </script>
 </body>
