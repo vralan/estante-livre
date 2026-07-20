@@ -18,13 +18,12 @@
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 items-center">
                 
-                <!-- Logo & Links de Navegação Esquerda -->
-                <div class="flex items-center space-x-8">
-                    <span onclick="trocarAba('inicio')" class="text-2xl font-bold text-amber-700 tracking-tight cursor-pointer">
+                <!-- Logo & Links de Navegação -->
+                <div class="flex items-center space-x-6 sm:space-x-8">
+                    <span onclick="trocarAba('inicio')" class="text-xl sm:text-2xl font-bold text-amber-700 tracking-tight cursor-pointer">
                         estante<span class="text-stone-900">livre</span>
                     </span>
 
-                    <!-- Links de Navegação (Estilo Skoob Enxuto) -->
                     <div class="hidden md:flex items-center space-x-6 text-sm font-medium text-stone-600">
                         <button onclick="trocarAba('inicio')" class="hover:text-amber-800 transition">Início</button>
                         
@@ -35,8 +34,7 @@
                             </button>
                             <div class="absolute left-0 top-full hidden group-hover:block bg-white border border-stone-200 rounded-xl shadow-lg w-52 py-2 z-50">
                                 <a href="#" onclick="trocarAba('inicio'); return false;" class="block px-4 py-2 hover:bg-amber-50 text-stone-700 text-xs">📖 Todos os Livros & HQs</a>
-                                <a href="#" onclick="alert('Filtrando obras com tag TENHO PARA TROCA'); return false;" class="block px-4 py-2 hover:bg-amber-50 text-stone-700 text-xs">🔄 Disponíveis p/ Troca</a>
-                                <a href="#" onclick="alert('Em breve: Busca de leitores por cidade!'); return false;" class="block px-4 py-2 hover:bg-amber-50 text-stone-700 text-xs">👥 Comunidade / Leitores</a>
+                                <a href="#" onclick="trocarAba('inicio'); return false;" class="block px-4 py-2 hover:bg-amber-50 text-stone-700 text-xs">🔄 Disponíveis p/ Troca</a>
                             </div>
                         </div>
 
@@ -96,13 +94,13 @@
 
     <!-- ABA 2: MINHA ESTANTE VIRTUAL -->
     <main id="abaEstante" class="hidden max-w-6xl mx-auto px-4 py-8">
-        <div class="flex justify-between items-center mb-6 border-b border-stone-200 pb-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b border-stone-200 pb-4 gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-stone-900">Minha Estante Virtual</h1>
-                <p class="text-xs text-stone-500">Gerencie os livros que você possui e os que deseja trocar.</p>
+                <p class="text-xs text-stone-500">Gerencie seus desapegos para troca e sua lista de desejados.</p>
             </div>
             <button onclick="trocarAba('inicio')" class="bg-amber-700 hover:bg-amber-800 text-white text-xs font-semibold px-4 py-2 rounded-lg">
-                + Adicionar Mais Livros
+                + Explorar Acervo
             </button>
         </div>
 
@@ -114,19 +112,49 @@
     <!-- ABA 3: PAINEL DE TROCAS -->
     <main id="abaTrocas" class="hidden max-w-4xl mx-auto px-4 py-8">
         <h1 class="text-2xl font-bold text-stone-900 mb-2">Central de Trocas 📦</h1>
-        <p class="text-sm text-stone-600 mb-6">Acompanhe as solicitações de envio e recebimento de livros.</p>
+        <p class="text-sm text-stone-600 mb-6">Gerencie pedidos de troca enviados e recebidos.</p>
 
-        <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 text-center">
-            <div class="text-4xl mb-3">🔄</div>
-            <h3 class="text-lg font-bold text-stone-900 mb-1">Nenhuma troca ativa no momento</h3>
-            <p class="text-xs text-stone-500 max-w-md mx-auto mb-4">Adicione livros com a tag "Tenho para Troca" na sua estante para que outros leitores possam solicitar!</p>
-            <button onclick="trocarAba('inicio')" class="bg-amber-700 hover:bg-amber-800 text-white text-xs font-semibold px-4 py-2 rounded-lg">
-                Explorar Acervo p/ Solicitar Troca
-            </button>
+        <div id="listaTrocasContainer" class="space-y-4">
+            <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 text-center">
+                <div class="text-4xl mb-3">🔄</div>
+                <h3 class="text-lg font-bold text-stone-900 mb-1">Nenhuma troca ativa no momento</h3>
+                <p class="text-xs text-stone-500 max-w-md mx-auto mb-4">Adicione obras à sua estante com o status "Disponível para Troca" ou envie solicitações no acervo!</p>
+                <button onclick="trocarAba('inicio')" class="bg-amber-700 hover:bg-amber-800 text-white text-xs font-semibold px-4 py-2 rounded-lg">
+                    Explorar Obras Disponíveis
+                </button>
+            </div>
         </div>
     </main>
 
-    <!-- Modal de Cadastro Comunitário -->
+    <!-- Modal Adicionar à Estante (Escolha de Status) -->
+    <div id="addStatusModal" class="hidden fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl border border-stone-200 w-full max-w-sm p-6 relative">
+            <button type="button" onclick="closeAddStatusModal()" class="absolute top-4 right-4 text-stone-400 hover:text-stone-600 font-bold text-xl cursor-pointer">&times;</button>
+            
+            <h3 class="text-lg font-bold text-stone-900 mb-1">Adicionar à Estante</h3>
+            <p id="modalBookTitle" class="text-xs text-amber-800 font-semibold mb-4 line-clamp-1"></p>
+
+            <div class="space-y-3">
+                <button onclick="confirmarAdicionarEstante('TENHO')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white p-3 rounded-xl text-left transition flex items-center justify-between shadow-sm">
+                    <div>
+                        <p class="text-xs font-bold">🟢 Tenho para Trocar</p>
+                        <p class="text-[10px] text-emerald-100">Disponibilizar esta obra para trocas na rede</p>
+                    </div>
+                    <span>➔</span>
+                </button>
+
+                <button onclick="confirmarAdicionarEstante('QUERO')" class="w-full bg-amber-700 hover:bg-amber-800 text-white p-3 rounded-xl text-left transition flex items-center justify-between shadow-sm">
+                    <div>
+                        <p class="text-xs font-bold">🟡 Quero Ler / Desejado</p>
+                        <p class="text-[10px] text-amber-100">Salvar na sua lista de desejos de leitura</p>
+                    </div>
+                    <span>➔</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Cadastro Comunitário -->
     <div id="addBookModal" class="hidden fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl border border-stone-200 w-full max-w-md p-6 relative">
             <button type="button" onclick="closeAddBookModal()" class="absolute top-4 right-4 text-stone-400 hover:text-stone-600 font-bold text-xl cursor-pointer">&times;</button>
@@ -166,7 +194,7 @@
         <div class="bg-white rounded-2xl shadow-xl border border-stone-200 w-full max-w-md p-6 relative">
             <button type="button" onclick="closeAuthModal()" class="absolute top-4 right-4 text-stone-400 hover:text-stone-600 font-bold text-xl cursor-pointer">&times;</button>
             <h3 id="modalTitle" class="text-2xl font-bold text-stone-900 mb-2">Entrar no estantelivre</h3>
-            <p class="text-sm text-stone-500 mb-6">Conecte-se para gerenciar sua estante.</p>
+            <p class="text-sm text-stone-500 mb-6">Conecte-se para gerenciar sua estante e realizar trocas.</p>
             <form id="authForm" onsubmit="handleAuth(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold text-stone-600 mb-1">E-mail</label>
@@ -197,6 +225,8 @@
         }
 
         let currentUser = null;
+        let selectedBookForStatus = null;
+        let listaTrocasAtivas = [];
 
         const acervoLocal = [
             { id: 'l1', title: 'Dom Casmurro', author: 'Machado de Assis', category: 'Livro', cover: 'https://covers.openlibrary.org/b/id/9251896-M.jpg' },
@@ -226,6 +256,7 @@
                 carregarMinhaEstante();
             } else if (nomeAba === 'trocas') {
                 document.getElementById('abaTrocas').classList.remove('hidden');
+                renderizarTrocas();
             }
         }
 
@@ -238,6 +269,7 @@
         function closeAuthModal() { document.getElementById('authModal').classList.add('hidden'); }
         function openAddBookModal() { document.getElementById('addBookModal').classList.remove('hidden'); }
         function closeAddBookModal() { document.getElementById('addBookModal').classList.add('hidden'); }
+        function closeAddStatusModal() { document.getElementById('addStatusModal').classList.add('hidden'); }
 
         function toggleAuthMode() {
             currentAuthMode = currentAuthMode === 'login' ? 'signup' : 'login';
@@ -311,30 +343,98 @@
             window.location.reload();
         }
 
-        async function adicionarAEstante(title, author, cover, category) {
+        // --- SISTEMA DE ESTANTE E TROCAS ---
+        function abrirModalSelecaoStatus(title, author, cover, category) {
             if (!currentUser) {
                 alert('Faça login para adicionar livros à sua estante virtual!');
                 openAuthModal('login');
                 return;
             }
 
+            selectedBookForStatus = { title, author, cover, category };
+            document.getElementById('modalBookTitle').innerText = title;
+            document.getElementById('addStatusModal').classList.remove('hidden');
+        }
+
+        async function confirmarAdicionarEstante(statusChoice) {
+            if (!selectedBookForStatus || !currentUser) return;
+
             try {
                 if (supabaseClient) {
                     const { error } = await supabaseClient.from('user_books').insert({
                         user_id: currentUser.id,
                         google_book_id: 'custom_' + Date.now(),
-                        title: title,
-                        authors: author,
-                        thumbnail_url: cover,
-                        status: 'TENHO'
+                        title: selectedBookForStatus.title,
+                        authors: selectedBookForStatus.author,
+                        thumbnail_url: selectedBookForStatus.cover,
+                        status: statusChoice
                     });
 
                     if (error) throw error;
                 }
-                alert(`📚 "${title}" foi adicionado com sucesso à sua estante!`);
+
+                const msg = statusChoice === 'TENHO' ? 'marcado como DISPONÍVEL PARA TROCA!' : 'adicionado à sua LISTA DE DESEJOS!';
+                alert(`📚 "${selectedBookForStatus.title}" ${msg}`);
+                closeAddStatusModal();
             } catch (err) {
-                alert('Erro ao salvar livro na estante: ' + err.message);
+                alert('Erro ao salvar livro: ' + err.message);
             }
+        }
+
+        function solicitarTrocaDirect(title, author) {
+            if (!currentUser) {
+                alert('Faça login para solicitar a troca deste livro!');
+                openAuthModal('login');
+                return;
+            }
+
+            const novaSolicitacao = {
+                id: 'troca_' + Date.now(),
+                title: title,
+                author: author,
+                solicitante: currentUser.email.split('@')[0],
+                data: new Date().toLocaleDateString('pt-BR'),
+                status: 'Aguardando Resposta'
+            };
+
+            listaTrocasAtivas.unshift(novaSolicitacao);
+            document.getElementById('trocasBadge').innerText = listaTrocasAtivas.length;
+
+            alert(`📦 Solicitação de troca enviada para "${title}"! Acompanhe na aba Trocas.`);
+            trocarAba('trocas');
+        }
+
+        function renderizarTrocas() {
+            const container = document.getElementById('listaTrocasContainer');
+            if (listaTrocasAtivas.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 text-center">
+                        <div class="text-4xl mb-3">🔄</div>
+                        <h3 class="text-lg font-bold text-stone-900 mb-1">Nenhuma troca ativa no momento</h3>
+                        <p class="text-xs text-stone-500 max-w-md mx-auto mb-4">Adicione obras à sua estante com o status "Disponível para Troca" ou envie solicitações no acervo!</p>
+                        <button onclick="trocarAba('inicio')" class="bg-amber-700 hover:bg-amber-800 text-white text-xs font-semibold px-4 py-2 rounded-lg">
+                            Explorar Obras Disponíveis
+                        </button>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = '';
+            listaTrocasAtivas.forEach(troca => {
+                const card = `
+                    <div class="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <span class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold uppercase mb-1 inline-block">${troca.status}</span>
+                            <h3 class="font-bold text-base text-stone-900">${escapeHtml(troca.title)}</h3>
+                            <p class="text-xs text-stone-500">Autor: ${escapeHtml(troca.author)} | Solicitado por: <span class="font-semibold text-stone-800">${troca.solicitante}</span> em ${troca.data}</p>
+                        </div>
+                        <button onclick="alert('Solicitação em andamento. Em breve: Chat direto entre os leitores!');" class="bg-stone-800 hover:bg-stone-900 text-white text-xs font-semibold px-4 py-2 rounded-lg transition">
+                            Ver Detalhes / Endereço
+                        </button>
+                    </div>
+                `;
+                container.innerHTML += card;
+            });
         }
 
         async function carregarMinhaEstante() {
@@ -355,10 +455,14 @@
 
                 grid.innerHTML = '';
                 data.forEach(book => {
+                    const statusBadge = book.status === 'TENHO' ? 
+                        '<span class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold uppercase mb-2 inline-block">Disponível p/ Troca</span>' : 
+                        '<span class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold uppercase mb-2 inline-block">Lista de Desejos</span>';
+
                     const card = `
                         <div class="bg-white p-4 rounded-xl shadow-sm border border-stone-100 flex flex-col justify-between">
                             <div>
-                                <span class="text-[10px] bg-green-100 text-green-800 px-2 py-0.5 rounded font-bold uppercase mb-2 inline-block">${book.status || 'TENHO'}</span>
+                                ${statusBadge}
                                 <img src="${book.thumbnail_url || 'https://via.placeholder.com/128x192'}" class="w-full h-48 object-cover rounded-lg mb-3 shadow-sm bg-stone-100">
                                 <h3 class="font-bold text-sm text-stone-900 line-clamp-1">${escapeHtml(book.title)}</h3>
                                 <p class="text-xs text-stone-500 mb-2 line-clamp-1">${escapeHtml(book.authors || '')}</p>
@@ -387,9 +491,14 @@
                             <h3 class="font-bold text-sm text-stone-900 line-clamp-1">${escapeHtml(item.title)}</h3>
                             <p class="text-xs text-stone-500 mb-2 line-clamp-1">${escapeHtml(item.author)}</p>
                         </div>
-                        <button type="button" onclick="adicionarAEstante('${escapeHtml(item.title)}', '${escapeHtml(item.author)}', '${cover}', '${escapeHtml(item.category)}')" class="w-full bg-amber-700 hover:bg-amber-800 text-white font-medium text-xs py-2 rounded-md transition mt-2 cursor-pointer">
-                            + Adicionar à Estante
-                        </button>
+                        <div class="space-y-1.5 mt-2">
+                            <button type="button" onclick="abrirModalSelecaoStatus('${escapeHtml(item.title)}', '${escapeHtml(item.author)}', '${cover}', '${escapeHtml(item.category)}')" class="w-full bg-amber-700 hover:bg-amber-800 text-white font-medium text-xs py-2 rounded-md transition cursor-pointer">
+                                + Adicionar à Estante
+                            </button>
+                            <button type="button" onclick="solicitarTrocaDirect('${escapeHtml(item.title)}', '${escapeHtml(item.author)}')" class="w-full bg-stone-100 hover:bg-stone-200 text-stone-800 font-semibold text-[11px] py-1.5 rounded-md transition cursor-pointer">
+                                📦 Solicitar Troca
+                            </button>
+                        </div>
                     </div>
                 `;
                 grid.innerHTML += card;
