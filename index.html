@@ -176,6 +176,49 @@
         </div>
     </main>
 
+    <!-- MODAL DE DETALHES DA OBRA (ESTILO SKOOB DETALHADO) -->
+    <div id="detailBookModal" class="hidden fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl border border-stone-200 w-full max-w-2xl p-6 relative max-h-[90vh] overflow-y-auto">
+            <button type="button" onclick="closeDetailBookModal()" class="absolute top-4 right-4 text-stone-400 hover:text-stone-600 font-bold text-xl cursor-pointer">&times;</button>
+            
+            <div class="flex flex-col sm:flex-row gap-6">
+                <!-- Capa Grande -->
+                <div class="w-full sm:w-48 flex-shrink-0 text-center">
+                    <img id="detailCover" src="" class="w-full h-64 object-cover rounded-xl shadow-md bg-stone-100 mb-3">
+                    <span id="detailCreditsBadge" class="inline-block bg-amber-100 text-amber-900 font-bold px-3 py-1 rounded-full text-xs border border-amber-300 mb-2"></span>
+                </div>
+
+                <!-- Informações Detalhadas -->
+                <div class="flex-1 flex flex-col justify-between">
+                    <div>
+                        <span id="detailCategory" class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold uppercase mb-2 inline-block"></span>
+                        <h2 id="detailTitle" class="text-2xl font-extrabold text-stone-900 leading-tight mb-1"></h2>
+                        <p id="detailAuthor" class="text-sm font-medium text-amber-800 mb-4"></p>
+                        
+                        <div class="bg-stone-50 p-4 rounded-xl border border-stone-200 mb-4">
+                            <h4 class="text-xs font-bold text-stone-700 uppercase mb-1">Sinopse / Sobre a Obra</h4>
+                            <p id="detailSynopsis" class="text-xs text-stone-600 leading-relaxed"></p>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 text-xs mb-6">
+                            <div class="bg-amber-50/50 p-2.5 rounded-lg border border-amber-100">
+                                <p class="text-stone-500 text-[10px]">Disponíveis na Rede</p>
+                                <p class="font-bold text-amber-900">3 leitores têm para troca</p>
+                            </div>
+                            <div class="bg-amber-50/50 p-2.5 rounded-lg border border-amber-100">
+                                <p class="text-stone-500 text-[10px]">Lista de Desejos</p>
+                                <p class="font-bold text-amber-900">12 pessoas querem</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botões de Ação na Ficha -->
+                    <div id="detailActions" class="space-y-2 pt-2 border-t border-stone-200"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL DE CHAT DA TROCA -->
     <div id="chatModal" class="hidden fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl border border-stone-200 w-full max-w-lg p-6 relative flex flex-col h-[500px]">
@@ -267,6 +310,10 @@
                     </div>
                 </div>
                 <div>
+                    <label class="block text-xs font-semibold text-stone-600 mb-1">Sinopse / Descrição da Obra</label>
+                    <textarea id="newBookSynopsis" rows="3" placeholder="Resumo da história ou detalhes da edição..." class="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm"></textarea>
+                </div>
+                <div>
                     <label class="block text-xs font-semibold text-stone-600 mb-1">URL da Capa (Opcional)</label>
                     <input type="url" id="newBookCover" placeholder="https://exemplo.com/capa.jpg" class="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm">
                 </div>
@@ -322,12 +369,60 @@
         let listaTrocasAtivas = [];
 
         const acervoLocal = [
-            { id: 'l1', title: 'Dom Casmurro', author: 'Machado de Assis', category: 'Livro', credits: 1, cover: 'https://covers.openlibrary.org/b/id/9251896-M.jpg' },
-            { id: 'l2', title: 'A Hora da Estrela', author: 'Clarice Lispector', category: 'Livro', credits: 1, cover: 'https://covers.openlibrary.org/b/id/10523421-M.jpg' },
-            { id: 'l3', title: 'O Hobbit (Edição Especial)', author: 'J.R.R. Tolkien', category: 'Livro', credits: 2, cover: 'https://covers.openlibrary.org/b/id/8406786-M.jpg' },
-            { id: 'm1', title: 'Jujutsu Kaisen - Vol. 01', author: 'Gege Akutami', category: 'Mangá', credits: 1, cover: 'https://via.placeholder.com/128x192?text=Jujutsu+Kaisen' },
-            { id: 'h1', title: 'Turma da Mônica: Laços (Capa Dura)', author: 'Vitor e Lu Cafaggi', category: 'HQ', credits: 2, cover: 'https://via.placeholder.com/128x192?text=M%C3%B4nica+La%C3%A7os' },
-            { id: 'l4', title: 'Grande Sertão: Veredas', author: 'João Guimarães Rosa', category: 'Livro', credits: 1, cover: 'https://via.placeholder.com/128x192?text=Grande+Sert%C3%A3o' }
+            { 
+                id: 'l1', 
+                title: 'Dom Casmurro', 
+                author: 'Machado de Assis', 
+                category: 'Livro', 
+                credits: 1, 
+                synopsis: 'Publicado em 1899, o romance narra a história de Bento Santiago (Bentuqui), que relembra sua juventude e seu relacionamento com Capitu, levantando o célebre enigma da dúvida sobre a fidelidade.',
+                cover: 'https://covers.openlibrary.org/b/id/9251896-M.jpg' 
+            },
+            { 
+                id: 'l2', 
+                title: 'A Hora da Estrela', 
+                author: 'Clarice Lispector', 
+                category: 'Livro', 
+                credits: 1, 
+                synopsis: 'A obra relata a vida da datilógrafa nordestina Macabéa, em uma visão profunda sobre a existência, solidão e invisibilidade social no Rio de Janeiro.',
+                cover: 'https://covers.openlibrary.org/b/id/10523421-M.jpg' 
+            },
+            { 
+                id: 'l3', 
+                title: 'O Hobbit (Edição Especial)', 
+                author: 'J.R.R. Tolkien', 
+                category: 'Livro', 
+                credits: 2, 
+                synopsis: 'A épica jornada de Bilbo Bolseiro acompanhando Gandalf e os treze anões para recuperar o tesouro guardado pelo temível dragão Smaug na Montanha Solitária.',
+                cover: 'https://covers.openlibrary.org/b/id/8406786-M.jpg' 
+            },
+            { 
+                id: 'm1', 
+                title: 'Jujutsu Kaisen - Vol. 01: Batalha de Feiticeiros', 
+                author: 'Gege Akutami', 
+                category: 'Mangá', 
+                credits: 1, 
+                synopsis: 'Apesar do estudante Yuji Itadori ter grande força física, ele prefere o Clube de Ocultismo. Quando o selo de um objeto amaldiçoado é quebrado, criaturas atacam seus amigos e Yuji engole o dedo de Ryomen Sukuna!',
+                cover: 'https://via.placeholder.com/128x192?text=Jujutsu+Kaisen' 
+            },
+            { 
+                id: 'h1', 
+                title: 'Turma da Mônica: Laços (Capa Dura)', 
+                author: 'Vitor e Lu Cafaggi', 
+                category: 'HQ', 
+                credits: 2, 
+                synopsis: 'Floquinho desapareceu. Para encontrar seu cão de estimação, Cebolinha vai precisar de um plano infalível e da ajuda de seus amigos Mônica, Cascão e Magali.',
+                cover: 'https://via.placeholder.com/128x192?text=M%C3%B4nica+La%C3%A7os' 
+            },
+            { 
+                id: 'l4', 
+                title: 'Grande Sertão: Veredas', 
+                author: 'João Guimarães Rosa', 
+                category: 'Livro', 
+                credits: 1, 
+                synopsis: 'O ex-jagunço Riobaldo conta sua história de vida e suas lutas no sertão brasileiro, abordando temas como amor, o bem e o mal e a travessia humana.',
+                cover: 'https://via.placeholder.com/128x192?text=Grande+Sert%C3%A3o' 
+            }
         ];
 
         let currentAuthMode = 'login';
@@ -370,6 +465,7 @@
         function closeAddBookModal() { document.getElementById('addBookModal').classList.add('hidden'); }
         function closeAddStatusModal() { document.getElementById('addStatusModal').classList.add('hidden'); }
         function closeChatModal() { document.getElementById('chatModal').classList.add('hidden'); }
+        function closeDetailBookModal() { document.getElementById('detailBookModal').classList.add('hidden'); }
 
         function toggleAuthMode() {
             currentAuthMode = currentAuthMode === 'login' ? 'signup' : 'login';
@@ -459,6 +555,32 @@
             alert(`📩 Sua mensagem sobre "${assunto}" foi enviada com sucesso para o Administrador! Obrigado por ajudar a construir o estantelivre.com.`);
             document.getElementById('contatoMensagem').value = '';
             trocarAba('inicio');
+        }
+
+        // --- FICHA DETALHADA DO LIVRO (ESTILO SKOOB) ---
+        function verDetalhesLivro(title, author, cover, category, credits, synopsis) {
+            credits = credits || 1;
+            synopsis = synopsis || "Sem sinopse cadastrada para esta obra no momento. Cadastre mais informações com o Admin!";
+            
+            document.getElementById('detailTitle').innerText = title;
+            document.getElementById('detailAuthor').innerText = "Autor: " + author;
+            document.getElementById('detailCategory').innerText = category || 'Obra';
+            document.getElementById('detailCreditsBadge').innerText = `${credits} Crédito(s) 🪙`;
+            document.getElementById('detailSynopsis').innerText = synopsis;
+            document.getElementById('detailCover').src = cover || 'https://via.placeholder.com/128x192';
+
+            document.getElementById('detailActions').innerHTML = `
+                <div class="grid grid-cols-2 gap-2">
+                    <button type="button" onclick="closeDetailBookModal(); abrirModalSelecaoStatus('${escapeHtml(title)}', '${escapeHtml(author)}', '${cover}', '${escapeHtml(category)}')" class="bg-amber-700 hover:bg-amber-800 text-white font-medium text-xs py-2.5 rounded-lg transition">
+                        + Adicionar à Estante
+                    </button>
+                    <button type="button" onclick="closeDetailBookModal(); solicitarTrocaDirect('${escapeHtml(title)}', '${escapeHtml(author)}', ${credits})" class="bg-stone-800 hover:bg-stone-900 text-white font-semibold text-xs py-2.5 rounded-lg transition">
+                        📦 Solicitar Troca (${credits} 🪙)
+                    </button>
+                </div>
+            `;
+
+            document.getElementById('detailBookModal').classList.remove('hidden');
         }
 
         // --- SISTEMA DE TROCAS E CRÉDITOS ---
@@ -632,8 +754,8 @@
                         <div class="bg-white p-4 rounded-xl shadow-sm border border-stone-100 flex flex-col justify-between">
                             <div>
                                 ${statusBadge}
-                                <img src="${book.thumbnail_url || 'https://via.placeholder.com/128x192'}" class="w-full h-48 object-cover rounded-lg mb-3 shadow-sm bg-stone-100">
-                                <h3 class="font-bold text-sm text-stone-900 line-clamp-1">${escapeHtml(book.title)}</h3>
+                                <img src="${book.thumbnail_url || 'https://via.placeholder.com/128x192'}" class="w-full h-48 object-cover rounded-lg mb-3 shadow-sm bg-stone-100 cursor-pointer" onclick="verDetalhesLivro('${escapeHtml(book.title)}', '${escapeHtml(book.authors || '')}', '${book.thumbnail_url}', 'Livro', 1, '')">
+                                <h3 class="font-bold text-sm text-stone-900 line-clamp-1 cursor-pointer" onclick="verDetalhesLivro('${escapeHtml(book.title)}', '${escapeHtml(book.authors || '')}', '${book.thumbnail_url}', 'Livro', 1, '')">${escapeHtml(book.title)}</h3>
                                 <p class="text-xs text-stone-500 mb-2 line-clamp-1">${escapeHtml(book.authors || '')}</p>
                             </div>
                         </div>
@@ -653,6 +775,8 @@
             lista.forEach(item => {
                 const cover = item.cover || 'https://via.placeholder.com/128x192?text=Sem+Capa';
                 const credits = item.credits || 1;
+                const synopsis = escapeHtml(item.synopsis || '');
+
                 const card = `
                     <div class="bg-white p-4 rounded-xl shadow-sm border border-stone-100 flex flex-col justify-between hover:shadow-md transition">
                         <div>
@@ -660,8 +784,8 @@
                                 <span class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold uppercase">${escapeHtml(item.category || 'Obra')}</span>
                                 <span class="text-[10px] bg-stone-100 text-stone-800 px-1.5 py-0.5 rounded font-bold">${credits} 🪙</span>
                             </div>
-                            <img src="${cover}" class="w-full h-48 object-cover rounded-lg mb-3 shadow-sm bg-stone-100" onerror="this.src='https://via.placeholder.com/128x192?text=Sem+Capa'">
-                            <h3 class="font-bold text-sm text-stone-900 line-clamp-1">${escapeHtml(item.title)}</h3>
+                            <img src="${cover}" class="w-full h-48 object-cover rounded-lg mb-3 shadow-sm bg-stone-100 cursor-pointer hover:opacity-90 transition" onclick="verDetalhesLivro('${escapeHtml(item.title)}', '${escapeHtml(item.author)}', '${cover}', '${escapeHtml(item.category)}', ${credits}, '${synopsis}')" onerror="this.src='https://via.placeholder.com/128x192?text=Sem+Capa'">
+                            <h3 class="font-bold text-sm text-stone-900 line-clamp-1 cursor-pointer hover:text-amber-800" onclick="verDetalhesLivro('${escapeHtml(item.title)}', '${escapeHtml(item.author)}', '${cover}', '${escapeHtml(item.category)}', ${credits}, '${synopsis}')">${escapeHtml(item.title)}</h3>
                             <p class="text-xs text-stone-500 mb-2 line-clamp-1">${escapeHtml(item.author)}</p>
                         </div>
                         <div class="space-y-1.5 mt-2">
@@ -711,6 +835,7 @@
                             author: doc.author_name ? doc.author_name[0] : 'Autor desconhecido',
                             category: 'Livro',
                             credits: 1,
+                            synopsis: 'Obra importada do acervo público. Solicite aos leitores da comunidade!',
                             cover: doc.cover_i ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg` : null
                         };
                         if (!resultados.some(r => r.title.toLowerCase() === apiBook.title.toLowerCase())) {
@@ -730,6 +855,7 @@
             const author = document.getElementById('newBookAuthor').value;
             const category = document.getElementById('newBookCategory').value;
             const credits = parseInt(document.getElementById('newBookCredits').value) || 1;
+            const synopsis = document.getElementById('newBookSynopsis').value;
             const cover = document.getElementById('newBookCover').value;
 
             acervoLocal.unshift({
@@ -738,6 +864,7 @@
                 author: author,
                 category: category,
                 credits: credits,
+                synopsis: synopsis,
                 cover: cover || null
             });
 
