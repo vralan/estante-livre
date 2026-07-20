@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>estante.livre - Troca de Livros</title>
+    <title>estantelivre.com - Troca de Livros</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -17,16 +18,16 @@
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 items-center">
                 <div class="flex items-center space-x-2">
-                    <span class="text-2xl font-bold text-amber-700 tracking-tight">estante<span class="text-stone-900">.livre</span></span>
+                    <span class="text-2xl font-bold text-amber-700 tracking-tight">estante<span class="text-stone-900">livre</span></span>
                 </div>
                 <div class="hidden md:flex space-x-8 text-sm font-medium text-stone-600">
                     <a href="#" class="hover:text-amber-700 transition">Explorar Livros</a>
                     <a href="#" class="hover:text-amber-700 transition">Como Funciona</a>
                     <a href="#" class="hover:text-amber-700 transition">Comunidade</a>
                 </div>
-                <div class="flex items-center space-x-4">
-                    <button class="text-sm font-medium text-stone-600 hover:text-stone-900">Entrar</button>
-                    <button class="bg-amber-700 hover:bg-amber-800 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-sm transition">Cadastrar</button>
+                <div class="flex items-center space-x-4" id="navButtons">
+                    <button onclick="openAuthModal('login')" class="text-sm font-medium text-stone-600 hover:text-stone-900">Entrar</button>
+                    <button onclick="openAuthModal('signup')" class="bg-amber-700 hover:bg-amber-800 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-sm transition">Cadastrar</button>
                 </div>
             </div>
         </div>
@@ -59,14 +60,13 @@
         <h2 id="sectionTitle" class="text-xl font-bold text-stone-900 mb-6">Livros em Destaque para Troca</h2>
         
         <div id="booksGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-            <!-- Cards dinamicos ou estáticos iniciais -->
             <div class="bg-white p-4 rounded-xl shadow-sm border border-stone-100 flex flex-col justify-between hover:shadow-md transition">
                 <div>
                     <img src="https://books.google.com/books/content?id=zyTCAl44dCQC&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api" class="w-full h-48 object-cover rounded-lg mb-3 shadow-sm">
                     <h3 class="font-bold text-sm text-stone-900 line-clamp-1">Dom Casmurro</h3>
                     <p class="text-xs text-stone-500 mb-2">Machado de Assis</p>
                 </div>
-                <button class="w-full bg-stone-100 hover:bg-amber-100 text-amber-800 font-medium text-xs py-2 rounded-md transition mt-2">Quero Trocar</button>
+                <button onclick="openAuthModal('login')" class="w-full bg-stone-100 hover:bg-amber-100 text-amber-800 font-medium text-xs py-2 rounded-md transition mt-2">Quero Trocar</button>
             </div>
 
             <div class="bg-white p-4 rounded-xl shadow-sm border border-stone-100 flex flex-col justify-between hover:shadow-md transition">
@@ -75,13 +75,75 @@
                     <h3 class="font-bold text-sm text-stone-900 line-clamp-1">O Hobbit</h3>
                     <p class="text-xs text-stone-500 mb-2">J.R.R. Tolkien</p>
                 </div>
-                <button class="w-full bg-stone-100 hover:bg-amber-100 text-amber-800 font-medium text-xs py-2 rounded-md transition mt-2">Quero Trocar</button>
+                <button onclick="openAuthModal('login')" class="w-full bg-stone-100 hover:bg-amber-100 text-amber-800 font-medium text-xs py-2 rounded-md transition mt-2">Quero Trocar</button>
             </div>
         </div>
     </section>
 
-    <!-- Script de Busca Real via Google Books API -->
+    <!-- Modal de Login/Cadastro -->
+    <div id="authModal" class="hidden fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl border border-stone-200 w-full max-w-md p-6 relative">
+            <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-stone-400 hover:text-stone-600 font-bold text-xl">&times;</button>
+            
+            <h3 id="modalTitle" class="text-2xl font-bold text-stone-900 mb-2">Entrar no estantelivre</h3>
+            <p class="text-sm text-stone-500 mb-6">Conecte-se para gerenciar seus livros e solicitar trocas.</p>
+
+            <form id="authForm" onsubmit="handleAuth(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-stone-600 mb-1">E-mail</label>
+                    <input type="email" id="authEmail" required class="w-full px-4 py-3 rounded-lg border border-stone-300 focus:outline-none focus:border-amber-700 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-stone-600 mb-1">Senha</label>
+                    <input type="password" id="authPassword" required minlength="6" class="w-full px-4 py-3 rounded-lg border border-stone-300 focus:outline-none focus:border-amber-700 text-sm">
+                </div>
+                <button type="submit" id="authSubmitBtn" class="w-full bg-amber-700 hover:bg-amber-800 text-white font-semibold py-3 rounded-lg transition shadow-sm text-sm">
+                    Entrar
+                </button>
+            </form>
+            
+            <p class="text-xs text-center text-stone-500 mt-4">
+                <span id="toggleAuthText">Ainda não tem conta?</span> 
+                <button onclick="toggleAuthMode()" id="toggleAuthBtn" class="text-amber-700 font-semibold underline ml-1">Cadastrar-se</button>
+            </p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
     <script>
+        let currentAuthMode = 'login';
+
+        function openAuthModal(mode) {
+            currentAuthMode = mode;
+            updateModalUI();
+            document.getElementById('authModal').classList.remove('hidden');
+        }
+
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.add('hidden');
+        }
+
+        function toggleAuthMode() {
+            currentAuthMode = currentAuthMode === 'login' ? 'signup' : 'login';
+            updateModalUI();
+        }
+
+        function updateModalUI() {
+            const isLogin = currentAuthMode === 'login';
+            document.getElementById('modalTitle').innerText = isLogin ? 'Entrar no estantelivre' : 'Criar sua conta';
+            document.getElementById('authSubmitBtn').innerText = isLogin ? 'Entrar' : 'Criar Conta Grátis';
+            document.getElementById('toggleAuthText').innerText = isLogin ? 'Ainda não tem conta?' : 'Já possui uma conta?';
+            document.getElementById('toggleAuthBtn').innerText = isLogin ? 'Cadastrar-se' : 'Entrar';
+        }
+
+        async function handleAuth(e) {
+            e.preventDefault();
+            const email = document.getElementById('authEmail').value;
+            const password = document.getElementById('authPassword').value;
+            alert(`Solicitação de ${currentAuthMode === 'login' ? 'Login' : 'Cadastro'} enviada para: ${email}`);
+            closeAuthModal();
+        }
+
         async function buscarLivros() {
             const query = document.getElementById('searchInput').value;
             if (!query) return;
@@ -115,7 +177,7 @@
                                 <h3 class="font-bold text-sm text-stone-900 line-clamp-1">${info.title}</h3>
                                 <p class="text-xs text-stone-500 mb-2 line-clamp-1">${authors}</p>
                             </div>
-                            <button class="w-full bg-amber-700 hover:bg-amber-800 text-white font-medium text-xs py-2 rounded-md transition mt-2">+ Adicionar à Estante</button>
+                            <button onclick="openAuthModal('login')" class="w-full bg-amber-700 hover:bg-amber-800 text-white font-medium text-xs py-2 rounded-md transition mt-2">+ Adicionar à Estante</button>
                         </div>
                     `;
                     grid.innerHTML += cardHtml;
