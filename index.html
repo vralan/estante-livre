@@ -131,12 +131,12 @@
     </div>
 
     <script>
-        // --- CONFIGURAÇÃO DO SUPABASE (COLE SUAS CHAVES AQUI) ---
-        const SUPABASE_URL = 'https://SUA_URL_AQUI.supabase.co';
-        const SUPABASE_ANON_KEY = 'SUA_ANON_KEY_AQUI';
+        // --- CONFIGURAÇÃO DO SUPABASE ---
+        const SUPABASE_URL = 'https://ykhaxfhhzwndbmekwrqr.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_-oOgyQodRHBcZEsISMpVhg_b3xLrulI';
 
         let supabaseClient = null;
-        if (typeof supabase !== 'undefined' && SUPABASE_URL && !SUPABASE_URL.includes('SUA_URL_AQUI')) {
+        if (typeof supabase !== 'undefined') {
             supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         }
 
@@ -146,8 +146,8 @@
             { id: 'l2', title: 'A Hora da Estrela', author: 'Clarice Lispector', category: 'Livro', cover: 'https://covers.openlibrary.org/b/id/10523421-M.jpg' },
             { id: 'l3', title: 'O Hobbit', author: 'J.R.R. Tolkien', category: 'Livro', cover: 'https://covers.openlibrary.org/b/id/8406786-M.jpg' },
             { id: 'm1', title: 'Jujutsu Kaisen - Vol. 01', author: 'Gege Akutami', category: 'Mangá', cover: 'https://via.placeholder.com/128x192?text=Jujutsu+Kaisen' },
-            { id: 'h1', title: 'Turma da Mônica: Laços', author: 'Vitor e Lu Cafaggi', category: 'HQ', cover: 'https://via.placeholder.com/128x192?text=Mônica+Laços' },
-            { id: 'l4', title: 'Grande Sertão: Veredas', author: 'João Guimarães Rosa', category: 'Livro', cover: 'https://via.placeholder.com/128x192?text=Grande+Sertão' }
+            { id: 'h1', title: 'Turma da Mônica: Laços', author: 'Vitor e Lu Cafaggi', category: 'HQ', cover: 'https://via.placeholder.com/128x192?text=M%C3%B4nica+La%C3%A7os' },
+            { id: 'l4', title: 'Grande Sertão: Veredas', author: 'João Guimarães Rosa', category: 'Livro', cover: 'https://via.placeholder.com/128x192?text=Grande+Sert%C3%A3o' }
         ];
 
         let currentAuthMode = 'login';
@@ -188,7 +188,7 @@
             const submitBtn = document.getElementById('authSubmitBtn');
 
             if (!supabaseClient) {
-                alert('Atenção: Insira a https://ykhaxfhhzwndbmekwrqr.supabase.co e sb_publishable_-oOgyQodRHBcZEsISMpVhg_b3xLrulI no código index.html para conectar o login real.');
+                alert('Erro na inicialização do Supabase.');
                 return;
             }
 
@@ -203,7 +203,7 @@
                 } else {
                     const { data, error } = await supabaseClient.auth.signUp({ email, password });
                     if (error) throw error;
-                    alert('🎉 Conta criada com sucesso!');
+                    alert('🎉 Conta criada com sucesso! Verifique seu e-mail para confirmar.');
                 }
                 closeAuthModal();
                 checkUserSession();
@@ -223,7 +223,7 @@
             if (session && navButtons) {
                 const userEmail = session.user.email.split('@')[0];
                 navButtons.innerHTML = `
-                    <span class="text-xs font-semibold text-stone-700">Olá, <span class="text-amber-800">${userEmail}</span></span>
+                    <span class="text-xs font-semibold text-stone-700">Olá, <span class="text-amber-800">${escapeHtml(userEmail)}</span></span>
                     <button type="button" onclick="logout()" class="text-xs text-red-600 font-medium hover:underline cursor-pointer">Sair</button>
                 `;
             }
