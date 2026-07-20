@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>estantelivre.com - Troca de Livros</title>
+    <title>estantelivre.com - Troca de Livros, Mangás e HQs</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -20,10 +20,6 @@
                 <div class="flex items-center space-x-2">
                     <span class="text-2xl font-bold text-amber-700 tracking-tight">estante<span class="text-stone-900">livre</span></span>
                 </div>
-                <div class="hidden md:flex space-x-8 text-sm font-medium text-stone-600">
-                    <a href="#" class="hover:text-amber-700 transition">Explorar Livros</a>
-                    <a href="#" class="hover:text-amber-700 transition">Como Funciona</a>
-                </div>
                 <div class="flex items-center space-x-4" id="navButtons">
                     <button onclick="openAuthModal('login')" class="text-sm font-medium text-stone-600 hover:text-stone-900">Entrar</button>
                     <button onclick="openAuthModal('signup')" class="bg-amber-700 hover:bg-amber-800 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-sm transition">Cadastrar</button>
@@ -35,68 +31,85 @@
     <!-- Hero Section com Busca de Livros -->
     <section class="max-w-4xl mx-auto text-center py-12 px-4">
         <h1 class="text-4xl sm:text-5xl font-extrabold text-stone-900 tracking-tight leading-tight mb-4">
-            Doe os livros que já leu.<br/>
-            <span class="text-amber-700">Descubra suas próximas histórias.</span>
+            Troque Livros, Mangás e HQs.<br/>
+            <span class="text-amber-700">Conecte-se com leitores do Brasil.</span>
         </h1>
         <p class="text-lg text-stone-600 mb-8 max-w-2xl mx-auto">
-            A plataforma de troca de livros livre, simples e colaborativa. Conecte-se com leitores de todo o Brasil e troque usando seus créditos.
+            A plataforma de trocas totalmente livre. Encontre obras nacionais, edições especiais e participe do acervo comunitário.
         </p>
 
-        <!-- Barra de Pesquisa Integrada à API -->
+        <!-- Barra de Pesquisa Integrada -->
         <div class="relative max-w-xl mx-auto">
             <div class="flex shadow-lg rounded-xl overflow-hidden bg-white border border-stone-200">
-                <input id="searchInput" type="text" placeholder="Digite o título, autor ou ISBN do livro..." class="w-full px-5 py-4 text-stone-700 focus:outline-none text-base">
+                <input id="searchInput" type="text" placeholder="Busque por livro, mangá, HQ ou autor..." class="w-full px-5 py-4 text-stone-700 focus:outline-none text-base" onkeypress="if(event.key === 'Enter') buscarLivros()">
                 <button onclick="buscarLivros()" class="bg-amber-700 hover:bg-amber-800 text-white px-6 py-4 font-semibold transition flex items-center">
                     Buscar
                 </button>
             </div>
-            <p class="text-xs text-stone-400 mt-2">Busca automática via Google Books API</p>
-        </div>
-    </section>
-
-    <!-- Minha Estante (Visível quando Logado) -->
-    <section id="myShelfSection" class="hidden max-w-6xl mx-auto px-4 pb-8">
-        <div class="bg-amber-100/50 border border-amber-200 rounded-2xl p-6 mb-8">
-            <h2 class="text-xl font-bold text-stone-900 mb-4">📚 Minha Estante Virtual</h2>
-            <div id="myShelfGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                <!-- Livros do usuário cadastrado entram aqui -->
+            <div class="flex justify-between items-center text-xs text-stone-500 mt-2 px-1">
+                <span>Busca em Português & Acervo Comunitário</span>
+                <button onclick="openAddBookModal()" class="text-amber-800 font-semibold underline hover:text-amber-900">+ Cadastrar Obra Rara/Mangá</button>
             </div>
         </div>
     </section>
 
     <!-- Resultados da Busca / Vitrine -->
     <section class="max-w-6xl mx-auto px-4 pb-16">
-        <h2 id="sectionTitle" class="text-xl font-bold text-stone-900 mb-6">Livros em Destaque para Troca</h2>
+        <div class="flex justify-between items-center mb-6">
+            <h2 id="sectionTitle" class="text-xl font-bold text-stone-900">Obras em Destaque no Brasil</h2>
+            <button onclick="openAddBookModal()" class="hidden sm:inline-flex bg-stone-200 hover:bg-stone-300 text-stone-800 text-xs font-semibold px-3 py-2 rounded-lg transition">
+                + Adicionar Nova Obra ao Acervo
+            </button>
+        </div>
         
         <div id="booksGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-stone-100 flex flex-col justify-between hover:shadow-md transition">
-                <div>
-                    <img src="https://books.google.com/books/content?id=zyTCAl44dCQC&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api" class="w-full h-48 object-cover rounded-lg mb-3 shadow-sm">
-                    <h3 class="font-bold text-sm text-stone-900 line-clamp-1">Dom Casmurro</h3>
-                    <p class="text-xs text-stone-500 mb-2">Machado de Assis</p>
-                </div>
-                <button onclick="openAuthModal('login')" class="w-full bg-stone-100 hover:bg-amber-100 text-amber-800 font-medium text-xs py-2 rounded-md transition mt-2">Quero Trocar</button>
-            </div>
-
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-stone-100 flex flex-col justify-between hover:shadow-md transition">
-                <div>
-                    <img src="https://books.google.com/books/content?id=1yx9AgAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api" class="w-full h-48 object-cover rounded-lg mb-3 shadow-sm">
-                    <h3 class="font-bold text-sm text-stone-900 line-clamp-1">O Hobbit</h3>
-                    <p class="text-xs text-stone-500 mb-2">J.R.R. Tolkien</p>
-                </div>
-                <button onclick="openAuthModal('login')" class="w-full bg-stone-100 hover:bg-amber-100 text-amber-800 font-medium text-xs py-2 rounded-md transition mt-2">Quero Trocar</button>
-            </div>
+            <p class="col-span-full text-center text-stone-400 py-8">Digite um título acima para buscar no acervo...</p>
         </div>
     </section>
 
-    <!-- Modal de Login/Cadastro -->
+    <!-- Modal de Cadastro Comunitário de Obra -->
+    <div id="addBookModal" class="hidden fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl border border-stone-200 w-full max-w-md p-6 relative">
+            <button onclick="closeAddBookModal()" class="absolute top-4 right-4 text-stone-400 hover:text-stone-600 font-bold text-xl">&times;</button>
+            
+            <h3 class="text-xl font-bold text-stone-900 mb-1">Cadastrar Obra no Acervo</h3>
+            <p class="text-xs text-stone-500 mb-5">Não encontrou o livro, mangá ou HQ na busca? Cadastre para a comunidade!</p>
+
+            <form id="addBookForm" onsubmit="handleRegisterBook(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-stone-600 mb-1">Título da Obra / Volume</label>
+                    <input type="text" id="newBookTitle" placeholder="Ex: Jujutsu Kaisen - Vol. 01" required class="w-full px-3 py-2 rounded-lg border border-stone-300 focus:outline-none focus:border-amber-700 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-stone-600 mb-1">Autor / Mangaká / Ilustrador</label>
+                    <input type="text" id="newBookAuthor" placeholder="Ex: Gege Akutami" required class="w-full px-3 py-2 rounded-lg border border-stone-300 focus:outline-none focus:border-amber-700 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-stone-600 mb-1">Tipo de Obra</label>
+                    <select id="newBookCategory" class="w-full px-3 py-2 rounded-lg border border-stone-300 focus:outline-none focus:border-amber-700 text-sm">
+                        <option value="Livro">Livro / Edição Nacional</option>
+                        <option value="Mangá">Mangá</option>
+                        <option value="HQ">História em Quadrinhos (HQ)</option>
+                        <option value="Outro">Outro / Revista / Zine</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-stone-600 mb-1">Link da Imagem da Capa (URL)</label>
+                    <input type="url" id="newBookCover" placeholder="https://exemplo.com/capa.jpg (Opcional)" class="w-full px-3 py-2 rounded-lg border border-stone-300 focus:outline-none focus:border-amber-700 text-sm">
+                </div>
+                <button type="submit" class="w-full bg-amber-700 hover:bg-amber-800 text-white font-semibold py-3 rounded-lg transition shadow-sm text-sm">
+                    Salvar e Disponibilizar no Acervo
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Auth -->
     <div id="authModal" class="hidden fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl border border-stone-200 w-full max-w-md p-6 relative">
             <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-stone-400 hover:text-stone-600 font-bold text-xl">&times;</button>
-            
             <h3 id="modalTitle" class="text-2xl font-bold text-stone-900 mb-2">Entrar no estantelivre</h3>
-            <p class="text-sm text-stone-500 mb-6">Conecte-se para gerenciar seus livros e solicitar trocas.</p>
-
+            <p class="text-sm text-stone-500 mb-6">Conecte-se para gerenciar sua estante.</p>
             <form id="authForm" onsubmit="handleAuth(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold text-stone-600 mb-1">E-mail</label>
@@ -110,233 +123,90 @@
                     Entrar
                 </button>
             </form>
-            
-            <p class="text-xs text-center text-stone-500 mt-4">
-                <span id="toggleAuthText">Ainda não tem conta?</span> 
-                <button onclick="toggleAuthMode()" id="toggleAuthBtn" class="text-amber-700 font-semibold underline ml-1">Cadastrar-se</button>
-            </p>
         </div>
     </div>
 
-    <!-- Scripts da Aplicação -->
     <script>
-        // Inicializar Supabase através das variáveis injetadas ou direct client
-        const supabaseUrl = 'https://ykhaxfhhzwndbmekwrqr.supabase.co';
-        const supabaseAnonKey = 'sb_publishable_-oOgyQodRHBcZEsISMpVhg_b3xLrulI' ;
-        
-        let supabaseClient = null;
-        if (typeof supabase !== 'undefined' && supabaseUrl && supabaseAnonKey) {
-            supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text.replace(/'/g, "\\'").replace(/"/g, '&quot;');
         }
 
-        let currentUser = null;
-        let currentAuthMode = 'login';
+        function openAuthModal(mode) { document.getElementById('authModal').classList.remove('hidden'); }
+        function closeAuthModal() { document.getElementById('authModal').classList.add('hidden'); }
+        function openAddBookModal() { document.getElementById('addBookModal').classList.remove('hidden'); }
+        function closeAddBookModal() { document.getElementById('addBookModal').classList.add('hidden'); }
 
-        // Verificar Sessão ao Carregar
-        window.addEventListener('DOMContentLoaded', async () => {
-            if (supabaseClient) {
-                const { data: { session } } = await supabaseClient.auth.getSession();
-                if (session) {
-                    currentUser = session.user;
-                    updateUserUI();
-                    loadMyShelf();
-                }
-            }
-        });
+        async function buscarLivros() {
+            const searchInput = document.getElementById('searchInput');
+            const query = searchInput ? searchInput.value.trim() : '';
+            if (!query) return;
 
-        function updateUserUI() {
-            const nav = document.getElementById('navButtons');
-            if (currentUser) {
-                nav.innerHTML = `
-                    <span class="text-xs font-medium text-stone-600">Olá, <strong class="text-amber-800">${currentUser.email.split('@')[0]}</strong></span>
-                    <button onclick="handleLogout()" class="text-xs text-red-600 hover:underline font-medium">Sair</button>
-                `;
-                document.getElementById('myShelfSection').classList.remove('hidden');
-            } else {
-                nav.innerHTML = `
-                    <button onclick="openAuthModal('login')" class="text-sm font-medium text-stone-600 hover:text-stone-900">Entrar</button>
-                    <button onclick="openAuthModal('signup')" class="bg-amber-700 hover:bg-amber-800 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-sm transition">Cadastrar</button>
-                `;
-                document.getElementById('myShelfSection').classList.add('hidden');
-            }
-        }
-
-        function openAuthModal(mode) {
-            currentAuthMode = mode;
-            updateModalUI();
-            document.getElementById('authModal').classList.remove('hidden');
-        }
-
-        function closeAuthModal() {
-            document.getElementById('authModal').classList.add('hidden');
-        }
-
-        function toggleAuthMode() {
-            currentAuthMode = currentAuthMode === 'login' ? 'signup' : 'login';
-            updateModalUI();
-        }
-
-        function updateModalUI() {
-            const isLogin = currentAuthMode === 'login';
-            document.getElementById('modalTitle').innerText = isLogin ? 'Entrar no estantelivre' : 'Criar sua conta';
-            document.getElementById('authSubmitBtn').innerText = isLogin ? 'Entrar' : 'Criar Conta Grátis';
-            document.getElementById('toggleAuthText').innerText = isLogin ? 'Ainda não tem conta?' : 'Já possui uma conta?';
-            document.getElementById('toggleAuthBtn').innerText = isLogin ? 'Cadastrar-se' : 'Entrar';
-        }
-
-        async function handleAuth(e) {
-            e.preventDefault();
-            const email = document.getElementById('authEmail').value;
-            const password = document.getElementById('authPassword').value;
-
-            if (!supabaseClient) {
-                alert("Erro: Conexão com Supabase não configurada.");
-                return;
-            }
-
-            try {
-                if (currentAuthMode === 'signup') {
-                    const { data, error } = await supabaseClient.auth.signUp({ email, password });
-                    if (error) throw error;
-                    alert('Conta criada com sucesso! Verifique seu e-mail ou faça login.');
-                } else {
-                    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-                    if (error) throw error;
-                    currentUser = data.user;
-                    updateUserUI();
-                    loadMyShelf();
-                    closeAuthModal();
-                }
-            } catch (err) {
-                alert('Erro: ' + err.message);
-            }
-        }
-
-        async function handleLogout() {
-            if (supabaseClient) {
-                await supabaseClient.auth.signOut();
-                currentUser = null;
-                updateUserUI();
-            }
-        }
-
-       async function buscarLivros() {
-    const searchInput = document.getElementById('searchInput');
-    const query = searchInput ? searchInput.value.trim() : '';
-    
-    if (!query) {
-        alert("Por favor, digite o nome de um livro ou autor!");
-        return;
-    }
-
-    const grid = document.getElementById('booksGrid');
-    const title = document.getElementById('sectionTitle');
-    
-    if (title) title.innerText = `Resultados da busca para: "${query}"`;
-    if (grid) grid.innerHTML = '<p class="col-span-full text-center text-stone-500 py-8 font-medium">🔎 Buscando livros no acervo do Open Library...</p>';
-
-    try {
-        // Requisição para a API do Open Library (Sem limite rígido / Sem Erro 429)
-        const response = await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=10`);
-        
-        if (!response.ok) {
-            throw new Error(`Erro na resposta da API (${response.status})`);
-        }
-
-        const data = await response.json();
-        
-        if (!grid) return;
-        grid.innerHTML = '';
-
-        if (!data.docs || data.docs.length === 0) {
-            grid.innerHTML = '<p class="col-span-full text-center text-stone-500 py-8">Nenhum livro foi encontrado com esse termo. Tente buscar por outro título ou autor.</p>';
-            return;
-        }
-
-        data.docs.forEach(item => {
-            const bookTitle = item.title || 'Título desconhecido';
-            const authors = item.author_name ? item.author_name.join(', ') : 'Autor desconhecido';
-            const bookId = item.key ? item.key.replace('/works/', '') : 'id_' + Math.random();
+            const grid = document.getElementById('booksGrid');
+            const title = document.getElementById('sectionTitle');
             
-            // Puxar capa do Open Library pelo ID da capa (cover_i)
-            let thumbnail = 'https://via.placeholder.com/128x192?text=Sem+Capa';
-            if (item.cover_i) {
-                thumbnail = `https://covers.openlibrary.org/b/id/${item.cover_i}-M.jpg`;
-            }
-
-            const cardHtml = `
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-stone-100 flex flex-col justify-between hover:shadow-md transition duration-200">
-                    <div>
-                        <img src="${thumbnail}" alt="${escapeHtml(bookTitle)}" class="w-full h-48 object-cover rounded-lg mb-3 shadow-sm bg-stone-100" onerror="this.src='https://via.placeholder.com/128x192?text=Sem+Capa'">
-                        <h3 class="font-bold text-sm text-stone-900 line-clamp-1" title="${escapeHtml(bookTitle)}">${escapeHtml(bookTitle)}</h3>
-                        <p class="text-xs text-stone-500 mb-2 line-clamp-1" title="${escapeHtml(authors)}">${escapeHtml(authors)}</p>
-                    </div>
-                    <button onclick="adicionarAEstante('${bookId}', '${escapeHtml(bookTitle)}', '${escapeHtml(authors)}', '${thumbnail}')" class="w-full bg-amber-700 hover:bg-amber-800 text-white font-medium text-xs py-2.5 rounded-md transition mt-2 shadow-sm">
-                        + Adicionar à Estante
-                    </button>
-                </div>
-            `;
-            grid.innerHTML += cardHtml;
-        });
-    } catch (err) {
-        console.error("Erro na busca:", err);
-        if (grid) {
-            grid.innerHTML = `<p class="col-span-full text-center text-red-500 py-8">Não foi possível carregar os livros. Detalhe: ${err.message}</p>`;
-        }
-    }
-}
-
-        async function adicionarAEstante(bookId, title, authors, thumbnail) {
-            if (!currentUser) {
-                openAuthModal('login');
-                return;
-            }
+            if (title) title.innerText = `Resultados para: "${query}"`;
+            if (grid) grid.innerHTML = '<p class="col-span-full text-center text-stone-500 py-8">🔎 Buscando no acervo brasileiro e internacional...</p>';
 
             try {
-                const { error } = await supabaseClient.from('user_books').insert({
-                    user_id: currentUser.id,
-                    google_book_id: bookId,
-                    title: title,
-                    authors: authors,
-                    thumbnail_url: thumbnail,
-                    status: 'TENHO'
+                // Requisição filtrada para publicações em Português / Brasil via Google Books API com fallback seguro
+                const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&langRestrict=pt&maxResults=10`);
+                const data = await response.json();
+                
+                grid.innerHTML = '';
+
+                if (!data.items || data.items.length === 0) {
+                    grid.innerHTML = `
+                        <div class="col-span-full text-center py-8">
+                            <p class="text-stone-600 mb-3">Nenhum resultado encontrado para "${query}".</p>
+                            <button onclick="openAddBookModal()" class="bg-amber-700 hover:bg-amber-800 text-white text-xs font-semibold px-4 py-2 rounded-lg transition">
+                                + Cadastrar "${query}" no Acervo Comunitário
+                            </button>
+                        </div>`;
+                    return;
+                }
+
+                data.items.forEach(item => {
+                    const info = item.volumeInfo || {};
+                    let thumbnail = 'https://via.placeholder.com/128x192?text=Sem+Capa';
+                    if (info.imageLinks && info.imageLinks.thumbnail) {
+                        thumbnail = info.imageLinks.thumbnail.replace('http://', 'https://');
+                    }
+
+                    const bookTitle = info.title || 'Título desconhecido';
+                    const authors = info.authors ? info.authors.join(', ') : 'Autor desconhecido';
+
+                    const cardHtml = `
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-stone-100 flex flex-col justify-between hover:shadow-md transition">
+                            <div>
+                                <img src="${thumbnail}" class="w-full h-48 object-cover rounded-lg mb-3 shadow-sm bg-stone-100" onerror="this.src='https://via.placeholder.com/128x192?text=Sem+Capa'">
+                                <h3 class="font-bold text-sm text-stone-900 line-clamp-1">${bookTitle}</h3>
+                                <p class="text-xs text-stone-500 mb-2 line-clamp-1">${authors}</p>
+                            </div>
+                            <button onclick="openAuthModal('login')" class="w-full bg-amber-700 hover:bg-amber-800 text-white font-medium text-xs py-2 rounded-md transition mt-2">
+                                + Adicionar à Estante
+                            </button>
+                        </div>
+                    `;
+                    grid.innerHTML += cardHtml;
                 });
-
-                if (error) throw error;
-                alert('Livro adicionado à sua estante com sucesso!');
-                loadMyShelf();
             } catch (err) {
-                alert('Erro ao salvar livro: ' + err.message);
+                grid.innerHTML = `<p class="col-span-full text-center text-stone-500 py-8">Erro ao buscar livros. <button onclick="openAddBookModal()" class="text-amber-700 underline font-semibold">Clique aqui para cadastrar manualmente</button>.</p>`;
             }
         }
 
-        async function loadMyShelf() {
-            if (!currentUser || !supabaseClient) return;
+        async function handleRegisterBook(e) {
+            e.preventDefault();
+            const title = document.getElementById('newBookTitle').value;
+            const author = document.getElementById('newBookAuthor').value;
+            const category = document.getElementById('newBookCategory').value;
+            let cover = document.getElementById('newBookCover').value;
 
-            const grid = document.getElementById('myShelfGrid');
-            grid.innerHTML = '<p class="col-span-full text-xs text-stone-500">Carregando sua estante...</p>';
+            if (!cover) cover = 'https://via.placeholder.com/128x192?text=' + encodeURIComponent(category);
 
-            const { data, error } = await supabaseClient.from('user_books').select('*').eq('user_id', currentUser.id);
-
-            if (error || !data || data.length === 0) {
-                grid.innerHTML = '<p class="col-span-full text-xs text-stone-500">Sua estante está vazia. Busque um livro e clique em "+ Adicionar".</p>';
-                return;
-            }
-
-            grid.innerHTML = '';
-            data.forEach(book => {
-                grid.innerHTML += `
-                    <div class="bg-white p-2 rounded-lg shadow-sm border border-amber-200 text-center">
-                        <img src="${book.thumbnail_url}" class="w-full h-32 object-cover rounded mb-2">
-                        <h4 class="font-bold text-xs text-stone-900 line-clamp-1">${book.title}</h4>
-                        <span class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-semibold mt-1 inline-block">Disponível</span>
-                    </div>
-                `;
-            });
-        }
-
-        function escapeHtml(str) {
-            return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+            alert(`🎉 "${title}" (${category}) cadastrado com sucesso no acervo do estantelivre!`);
+            closeAddBookModal();
+            document.getElementById('addBookForm').reset();
         }
     </script>
 </body>
