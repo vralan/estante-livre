@@ -74,7 +74,7 @@
                     </button>
                 </div>
                 <div class="flex justify-between items-center text-xs text-stone-500 mt-2 px-1">
-                    <span>Busca em Português & Acervo Comunitário</span>
+                    <span>Busca Expandida no Acervo Global e Comunitário</span>
                     <button type="button" onclick="openAddBookModal()" class="text-amber-800 font-semibold underline hover:text-amber-900 cursor-pointer">+ Cadastrar Obra Rara/Mangá</button>
                 </div>
             </div>
@@ -121,12 +121,12 @@
     <main id="abaPerfil" class="hidden max-w-2xl mx-auto px-4 py-8">
         <div class="bg-white rounded-2xl border border-stone-200 p-6 shadow-sm">
             <h1 class="text-2xl font-bold text-stone-900 mb-2">Meu Perfil de Leitor 👤</h1>
-            <p class="text-xs text-stone-500 mb-6">Cadastre sua localização para calcular o frete das trocas ou combinar entregas presenciais.</p>
+            <p class="text-xs text-stone-500 mb-6">Cadastre seu apelido e localização para aparecer corretamente no topo e nas trocas.</p>
 
             <form onsubmit="salvarPerfil(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold text-stone-600 mb-1">Nome / Apelido no Site</label>
-                    <input type="text" id="perfilNome" required class="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm">
+                    <label class="block text-xs font-semibold text-stone-600 mb-1">Seu Apelido / Nome de Exibição</label>
+                    <input type="text" id="perfilNome" placeholder="Ex: Alan Vieira" required class="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm">
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
@@ -139,7 +139,7 @@
                     </div>
                 </div>
                 <button type="submit" class="w-full bg-amber-700 hover:bg-amber-800 text-white font-semibold py-2.5 rounded-lg text-sm transition">
-                    Salvar Dados de Localização
+                    Salvar Perfil e Apelido
                 </button>
             </form>
         </div>
@@ -203,11 +203,11 @@
                         <div class="grid grid-cols-2 gap-2 text-xs mb-6">
                             <div class="bg-amber-50/50 p-2.5 rounded-lg border border-amber-100">
                                 <p class="text-stone-500 text-[10px]">Disponíveis na Rede</p>
-                                <p class="font-bold text-amber-900">3 leitores têm para troca</p>
+                                <p class="font-bold text-amber-900">Acervo Comunitário Ativo</p>
                             </div>
                             <div class="bg-amber-50/50 p-2.5 rounded-lg border border-amber-100">
-                                <p class="text-stone-500 text-[10px]">Lista de Desejos</p>
-                                <p class="font-bold text-amber-900">12 pessoas querem</p>
+                                <p class="text-stone-500 text-[10px]">Troca Segura</p>
+                                <p class="font-bold text-amber-900">Garantida p/ Créditos</p>
                             </div>
                         </div>
                     </div>
@@ -361,6 +361,7 @@
 
         let currentUser = null;
         let userCreditos = 0; 
+        let userApelido = ''; // Nome de Exibição Personalizado
         let userCidade = 'Vitória';
         let userUF = 'ES';
         let activeTradeId = null;
@@ -368,61 +369,17 @@
         let selectedBookForStatus = null;
         let listaTrocasAtivas = [];
 
+        // Acervo Local Ampliado (Livros, Mangás e HQs Populares no Brasil)
         const acervoLocal = [
-            { 
-                id: 'l1', 
-                title: 'Dom Casmurro', 
-                author: 'Machado de Assis', 
-                category: 'Livro', 
-                credits: 1, 
-                synopsis: 'Publicado em 1899, o romance narra a história de Bento Santiago (Bentuqui), que relembra sua juventude e seu relacionamento com Capitu, levantando o célebre enigma da dúvida sobre a fidelidade.',
-                cover: 'https://covers.openlibrary.org/b/id/9251896-M.jpg' 
-            },
-            { 
-                id: 'l2', 
-                title: 'A Hora da Estrela', 
-                author: 'Clarice Lispector', 
-                category: 'Livro', 
-                credits: 1, 
-                synopsis: 'A obra relata a vida da datilógrafa nordestina Macabéa, em uma visão profunda sobre a existência, solidão e invisibilidade social no Rio de Janeiro.',
-                cover: 'https://covers.openlibrary.org/b/id/10523421-M.jpg' 
-            },
-            { 
-                id: 'l3', 
-                title: 'O Hobbit (Edição Especial)', 
-                author: 'J.R.R. Tolkien', 
-                category: 'Livro', 
-                credits: 2, 
-                synopsis: 'A épica jornada de Bilbo Bolseiro acompanhando Gandalf e os treze anões para recuperar o tesouro guardado pelo temível dragão Smaug na Montanha Solitária.',
-                cover: 'https://covers.openlibrary.org/b/id/8406786-M.jpg' 
-            },
-            { 
-                id: 'm1', 
-                title: 'Jujutsu Kaisen - Vol. 01: Batalha de Feiticeiros', 
-                author: 'Gege Akutami', 
-                category: 'Mangá', 
-                credits: 1, 
-                synopsis: 'Apesar do estudante Yuji Itadori ter grande força física, ele prefere o Clube de Ocultismo. Quando o selo de um objeto amaldiçoado é quebrado, criaturas atacam seus amigos e Yuji engole o dedo de Ryomen Sukuna!',
-                cover: 'https://via.placeholder.com/128x192?text=Jujutsu+Kaisen' 
-            },
-            { 
-                id: 'h1', 
-                title: 'Turma da Mônica: Laços (Capa Dura)', 
-                author: 'Vitor e Lu Cafaggi', 
-                category: 'HQ', 
-                credits: 2, 
-                synopsis: 'Floquinho desapareceu. Para encontrar seu cão de estimação, Cebolinha vai precisar de um plano infalível e da ajuda de seus amigos Mônica, Cascão e Magali.',
-                cover: 'https://via.placeholder.com/128x192?text=M%C3%B4nica+La%C3%A7os' 
-            },
-            { 
-                id: 'l4', 
-                title: 'Grande Sertão: Veredas', 
-                author: 'João Guimarães Rosa', 
-                category: 'Livro', 
-                credits: 1, 
-                synopsis: 'O ex-jagunço Riobaldo conta sua história de vida e suas lutas no sertão brasileiro, abordando temas como amor, o bem e o mal e a travessia humana.',
-                cover: 'https://via.placeholder.com/128x192?text=Grande+Sert%C3%A3o' 
-            }
+            { id: 'l1', title: 'Dom Casmurro', author: 'Machado de Assis', category: 'Livro', credits: 1, synopsis: 'O romance clássico narra a dúvida de Bento Santiago sobre Capitu e Escobar.', cover: 'https://covers.openlibrary.org/b/id/9251896-M.jpg' },
+            { id: 'l2', title: 'A Hora da Estrela', author: 'Clarice Lispector', category: 'Livro', credits: 1, synopsis: 'A vida e solidão de Macabéa no Rio de Janeiro.', cover: 'https://covers.openlibrary.org/b/id/10523421-M.jpg' },
+            { id: 'l3', title: 'O Hobbit (Edição Especial)', author: 'J.R.R. Tolkien', category: 'Livro', credits: 2, synopsis: 'A jornada de Bilbo Bolseiro e os treze anões até a Montanha Solitária.', cover: 'https://covers.openlibrary.org/b/id/8406786-M.jpg' },
+            { id: 'm1', title: 'Jujutsu Kaisen - Vol. 01', author: 'Gege Akutami', category: 'Mangá', credits: 1, synopsis: 'Yuji Itadori engole um objeto amaldiçoado e entra no mundo dos feiticeiros jujutsu.', cover: 'https://via.placeholder.com/128x192?text=Jujutsu+Kaisen' },
+            { id: 'm2', title: 'Demon Slayer - Kimetsu no Yaiba Vol. 01', author: 'Koyoharu Gotouge', category: 'Mangá', credits: 1, synopsis: 'Tanjiro Kamado luta para salvar sua irmã Nezuko e vingar sua família.', cover: 'https://via.placeholder.com/128x192?text=Demon+Slayer' },
+            { id: 'm3', title: 'One Piece - Vol. 01: Romance Dawn', author: 'Eiichiro Oda', category: 'Mangá', credits: 1, synopsis: 'Luffy inicia sua jornada no mar em busca do lendário tesouro One Piece.', cover: 'https://via.placeholder.com/128x192?text=One+Piece' },
+            { id: 'h1', title: 'Turma da Mônica: Laços (Capa Dura)', author: 'Vitor e Lu Cafaggi', category: 'HQ', credits: 2, synopsis: 'A Turma da Mônica embarca numa aventura emocionante para resgatar Floquinho.', cover: 'https://via.placeholder.com/128x192?text=M%C3%B4nica+La%C3%A7os' },
+            { id: 'l4', title: 'Grande Sertão: Veredas', author: 'João Guimarães Rosa', category: 'Livro', credits: 1, synopsis: 'As lutas, memórias e amores do ex-jagunço Riobaldo no sertão.', cover: 'https://via.placeholder.com/128x192?text=Grande+Sert%C3%A3o' },
+            { id: 'l5', title: 'O Alquimista', author: 'Paulo Coelho', category: 'Livro', credits: 1, synopsis: 'A jornada do jovem pastor Santiago em busca de sua lenda pessoal.', cover: 'https://covers.openlibrary.org/b/id/12818862-M.jpg' }
         ];
 
         let currentAuthMode = 'login';
@@ -518,13 +475,15 @@
             
             if (session) {
                 currentUser = session.user;
+                // Usar apelido salvo ou o prefixo do e-mail
+                const nomeExibicao = userApelido || session.user.email.split('@')[0];
+
                 if (navButtons) {
-                    const userEmail = session.user.email.split('@')[0];
                     navButtons.innerHTML = `
                         <div class="flex items-center space-x-3 text-xs">
                             <span class="bg-amber-100 text-amber-900 font-bold px-2.5 py-1 rounded-full border border-amber-300">🪙 ${userCreditos} Crédito(s)</span>
                             <button onclick="trocarAba('perfil')" class="font-semibold text-stone-700 hover:text-amber-800">📍 ${userCidade}-${userUF}</button>
-                            <span class="font-semibold text-stone-700">Olá, <span class="text-amber-800">${escapeHtml(userEmail)}</span></span>
+                            <span class="font-semibold text-stone-700">Olá, <span class="text-amber-800 font-bold">${escapeHtml(nomeExibicao)}</span></span>
                             <button type="button" onclick="logout()" class="text-red-600 font-medium hover:underline cursor-pointer">Sair</button>
                         </div>
                     `;
@@ -542,9 +501,13 @@
 
         function salvarPerfil(e) {
             e.preventDefault();
-            userCidade = document.getElementById('perfilCidade').value;
-            userUF = document.getElementById('perfilEstado').value.toUpperCase();
-            alert('📍 Dados de localização salvos com sucesso!');
+            const novoNome = document.getElementById('perfilNome').value.trim();
+            userCidade = document.getElementById('perfilCidade').value.trim();
+            userUF = document.getElementById('perfilEstado').value.trim().toUpperCase();
+            
+            if (novoNome) userApelido = novoNome;
+
+            alert('📍 Apelido e localização salvos com sucesso!');
             checkUserSession();
             trocarAba('inicio');
         }
@@ -560,7 +523,7 @@
         // --- FICHA DETALHADA DO LIVRO (ESTILO SKOOB) ---
         function verDetalhesLivro(title, author, cover, category, credits, synopsis) {
             credits = credits || 1;
-            synopsis = synopsis || "Sem sinopse cadastrada para esta obra no momento. Cadastre mais informações com o Admin!";
+            synopsis = synopsis || "Obra disponível no acervo comunitário da rede. Adicione à sua estante ou solicite uma troca!";
             
             document.getElementById('detailTitle').innerText = title;
             document.getElementById('detailAuthor').innerText = "Autor: " + author;
@@ -618,7 +581,7 @@
                 if (statusChoice === 'TENHO') {
                     userCreditos += creditsChoice;
                     checkUserSession();
-                    alert(`📚 "${selectedBookForStatus.title}" marcado como DISPONÍVEL PARA TROCA (${creditsChoice} 🪙)!\n🎉 Parabéns! Você ganhou +${creditsChoice} Crédito(s) por disponibilizar esta obra para a comunidade!`);
+                    alert(`📚 "${selectedBookForStatus.title}" marcado como DISPONÍVEL PARA TROCA (${creditsChoice} 🪙)!\n🎉 Você acumulou +${creditsChoice} Crédito(s) por disponibilizar a obra!`);
                 } else {
                     alert(`📚 "${selectedBookForStatus.title}" adicionado à sua LISTA DE DESEJOS!`);
                 }
@@ -639,7 +602,7 @@
             }
 
             if (userCreditos < creditsNeeded) {
-                alert(`⚠️ Esta obra requer ${creditsNeeded} Crédito(s) (🪙), mas você tem apenas ${userCreditos}.\n\n💡 Como obter mais créditos:\nCadastre livros na sua estante marcados como "Disponível para Troca"!`);
+                alert(`⚠️ Esta obra requer ${creditsNeeded} Crédito(s) (🪙), mas você tem apenas ${userCreditos}.\n\n💡 Como obter créditos:\nCadastre obras na sua estante marcadas como "Disponível para Troca"!`);
                 return;
             }
 
@@ -648,7 +611,7 @@
                 title: title,
                 author: author,
                 credits: creditsNeeded,
-                solicitante: currentUser.email.split('@')[0],
+                solicitante: userApelido || currentUser.email.split('@')[0],
                 cidade: `${userCidade}-${userUF}`,
                 data: new Date().toLocaleDateString('pt-BR'),
                 status: 'Aguardando Envio'
@@ -678,7 +641,7 @@
             const box = document.getElementById('chatMessages');
             box.innerHTML += `
                 <div class="bg-amber-100 p-2 rounded-lg ml-auto max-w-[80%] text-stone-900 border border-amber-200">
-                    <p class="font-bold text-[10px] text-amber-800">Você (${userCidade})</p>
+                    <p class="font-bold text-[10px] text-amber-800">${userApelido || 'Você'} (${userCidade})</p>
                     <p>${escapeHtml(txt)}</p>
                 </div>
             `;
@@ -802,6 +765,7 @@
             });
         }
 
+        // --- BUSCA EXPANDIDA QUE RECONHECE DIVERSAS OPÇÕES (ESTILO SKOOB) ---
         async function buscarLivros() {
             const searchInput = document.getElementById('searchInput');
             const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
@@ -815,6 +779,7 @@
 
             if (title) title.innerText = `Resultados para: "${searchInput.value.trim()}"`;
 
+            // 1. Filtra da lista local ampliada
             const resultados = acervoLocal.filter(item => 
                 item.title.toLowerCase().includes(query) || 
                 item.author.toLowerCase().includes(query) ||
@@ -823,8 +788,9 @@
 
             renderizarLista(resultados);
 
+            // 2. Traz mais opções direto do acervo global para simular o Skoob
             try {
-                const response = await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=6`);
+                const response = await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=10`);
                 const data = await response.json();
 
                 if (data.docs && data.docs.length > 0) {
@@ -832,12 +798,14 @@
                         const apiBook = {
                             id: doc.key,
                             title: doc.title,
-                            author: doc.author_name ? doc.author_name[0] : 'Autor desconhecido',
-                            category: 'Livro',
+                            author: doc.author_name ? doc.author_name[0] : 'Autor cadastrado',
+                            category: doc.first_publish_year ? `Edição ${doc.first_publish_year}` : 'Livro',
                             credits: 1,
-                            synopsis: 'Obra importada do acervo público. Solicite aos leitores da comunidade!',
+                            synopsis: 'Obra reconhecida no acervo global. Disponível para trocas e cadastro na comunidade!',
                             cover: doc.cover_i ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg` : null
                         };
+                        
+                        // Adicionar ao resultado sem duplicar títulos
                         if (!resultados.some(r => r.title.toLowerCase() === apiBook.title.toLowerCase())) {
                             resultados.push(apiBook);
                         }
@@ -845,7 +813,7 @@
                     renderizarLista(resultados);
                 }
             } catch (e) {
-                console.log('Busca externa mantida em acervo local.');
+                console.log('Busca mantida no acervo local.');
             }
         }
 
