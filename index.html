@@ -133,126 +133,186 @@
         </div>
     </div>
 
-    <script>
-        let currentAuthMode = 'login';
+<script>
+    // 1. Conexão real com o Supabase
+    // NOTA: Cole a sua URL e ANON KEY do Supabase aqui entre as aspas
+    const SUPABASE_URL = 'https://ykhaxfhhzwndbmekwrqr.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_-oOgyQodRHBcZEsISMpVhg_b3xLrulI';
+    
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        function openAuthModal(mode) { 
-            currentAuthMode = mode || 'login';
-            updateModalUI();
-            const modal = document.getElementById('authModal');
-            if (modal) modal.classList.remove('hidden'); 
-        }
+    let currentAuthMode = 'login';
 
-        function closeAuthModal() { 
-            const modal = document.getElementById('authModal');
-            if (modal) modal.classList.add('hidden'); 
-        }
+    function escapeHtml(text) {
+        if (!text) return '';
+        return text.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    }
 
-        function openAddBookModal() { 
-            const modal = document.getElementById('addBookModal');
-            if (modal) modal.classList.remove('hidden'); 
-        }
+    function openAuthModal(mode) { 
+        currentAuthMode = mode || 'login';
+        updateModalUI();
+        const modal = document.getElementById('authModal');
+        if (modal) modal.classList.remove('hidden'); 
+    }
 
-        function closeAddBookModal() { 
-            const modal = document.getElementById('addBookModal');
-            if (modal) modal.classList.add('hidden'); 
-        }
+    function closeAuthModal() { 
+        const modal = document.getElementById('authModal');
+        if (modal) modal.classList.add('hidden'); 
+    }
 
-        function toggleAuthMode() {
-            currentAuthMode = currentAuthMode === 'login' ? 'signup' : 'login';
-            updateModalUI();
-        }
+    function openAddBookModal() { 
+        const modal = document.getElementById('addBookModal');
+        if (modal) modal.classList.remove('hidden'); 
+    }
 
-        function updateModalUI() {
-            const isLogin = currentAuthMode === 'login';
-            const modalTitle = document.getElementById('modalTitle');
-            const authSubmitBtn = document.getElementById('authSubmitBtn');
-            const toggleAuthText = document.getElementById('toggleAuthText');
-            const toggleAuthBtn = document.getElementById('toggleAuthBtn');
+    function closeAddBookModal() { 
+        const modal = document.getElementById('addBookModal');
+        if (modal) modal.classList.add('hidden'); 
+    }
 
-            if (modalTitle) modalTitle.innerText = isLogin ? 'Entrar no estantelivre' : 'Criar sua conta';
-            if (authSubmitBtn) authSubmitBtn.innerText = isLogin ? 'Entrar' : 'Criar Conta Grátis';
-            if (toggleAuthText) toggleAuthText.innerText = isLogin ? 'Ainda não tem conta?' : 'Já possui uma conta?';
-            if (toggleAuthBtn) toggleAuthBtn.innerText = isLogin ? 'Cadastrar-se' : 'Entrar';
-        }
+    function toggleAuthMode() {
+        currentAuthMode = currentAuthMode === 'login' ? 'signup' : 'login';
+        updateModalUI();
+    }
 
-        async function handleAuth(e) {
-            e.preventDefault();
-            const email = document.getElementById('authEmail').value;
-            const password = document.getElementById('authPassword').value;
-            alert(`Solicitação de ${currentAuthMode === 'login' ? 'Login' : 'Cadastro'} enviada para: ${email}`);
-            closeAuthModal();
-        }
+    function updateModalUI() {
+        const isLogin = currentAuthMode === 'login';
+        const modalTitle = document.getElementById('modalTitle');
+        const authSubmitBtn = document.getElementById('authSubmitBtn');
+        const toggleAuthText = document.getElementById('toggleAuthText');
+        const toggleAuthBtn = document.getElementById('toggleAuthBtn');
 
-        async function buscarLivros() {
-            const searchInput = document.getElementById('searchInput');
-            const query = searchInput ? searchInput.value.trim() : '';
-            if (!query) return;
+        if (modalTitle) modalTitle.innerText = isLogin ? 'Entrar no estantelivre' : 'Criar sua conta';
+        if (authSubmitBtn) authSubmitBtn.innerText = isLogin ? 'Entrar' : 'Criar Conta Grátis';
+        if (toggleAuthText) toggleAuthText.innerText = isLogin ? 'Ainda não tem conta?' : 'Já possui uma conta?';
+        if (toggleAuthBtn) toggleAuthBtn.innerText = isLogin ? 'Cadastrar-se' : 'Entrar';
+    }
 
-            const grid = document.getElementById('booksGrid');
-            const title = document.getElementById('sectionTitle');
-            
-            if (title) title.innerText = `Resultados para: "${query}"`;
-            if (grid) grid.innerHTML = '<p class="col-span-full text-center text-stone-500 py-8">🔎 Buscando no acervo brasileiro...</p>';
+    // AUTH REAL COM SUPABASE
+    async function handleAuth(e) {
+        e.preventDefault();
+        const email = document.getElementById('authEmail').value;
+        const password = document.getElementById('authPassword').value;
+        const submitBtn = document.getElementById('authSubmitBtn');
 
-            try {
-                const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&langRestrict=pt&maxResults=10`);
-                const data = await response.json();
-                
-                if (!grid) return;
-                grid.innerHTML = '';
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'Aguarde...';
 
-                if (!data.items || data.items.length === 0) {
-                    grid.innerHTML = `
-                        <div class="col-span-full text-center py-8">
-                            <p class="text-stone-600 mb-3">Nenhum resultado encontrado para "${query}".</p>
-                            <button type="button" onclick="openAddBookModal()" class="bg-amber-700 hover:bg-amber-800 text-white text-xs font-semibold px-4 py-2 rounded-lg transition cursor-pointer">
-                                + Cadastrar "${query}" no Acervo Comunitário
-                            </button>
-                        </div>`;
-                    return;
-                }
-
-                data.items.forEach(item => {
-                    const info = item.volumeInfo || {};
-                    let thumbnail = 'https://via.placeholder.com/128x192?text=Sem+Capa';
-                    if (info.imageLinks && info.imageLinks.thumbnail) {
-                        thumbnail = info.imageLinks.thumbnail.replace('http://', 'https://');
-                    }
-
-                    const bookTitle = info.title || 'Título desconhecido';
-                    const authors = info.authors ? info.authors.join(', ') : 'Autor desconhecido';
-
-                    const cardHtml = `
-                        <div class="bg-white p-4 rounded-xl shadow-sm border border-stone-100 flex flex-col justify-between hover:shadow-md transition">
-                            <div>
-                                <img src="${thumbnail}" class="w-full h-48 object-cover rounded-lg mb-3 shadow-sm bg-stone-100" onerror="this.src='https://via.placeholder.com/128x192?text=Sem+Capa'">
-                                <h3 class="font-bold text-sm text-stone-900 line-clamp-1">${bookTitle}</h3>
-                                <p class="text-xs text-stone-500 mb-2 line-clamp-1">${authors}</p>
-                            </div>
-                            <button type="button" onclick="openAuthModal('login')" class="w-full bg-amber-700 hover:bg-amber-800 text-white font-medium text-xs py-2 rounded-md transition mt-2 cursor-pointer">
-                                + Adicionar à Estante
-                            </button>
-                        </div>
-                    `;
-                    grid.innerHTML += cardHtml;
+        try {
+            if (currentAuthMode === 'login') {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password,
                 });
-            } catch (err) {
-                if (grid) {
-                    grid.innerHTML = `<p class="col-span-full text-center text-stone-500 py-8">Erro ao buscar livros. <button type="button" onclick="openAddBookModal()" class="text-amber-700 underline font-semibold cursor-pointer">Clique aqui para cadastrar manualmente</button>.</p>`;
+                if (error) throw error;
+                alert('✨ Bem-vindo(a) de volta ao estantelivre!');
+            } else {
+                const { data, error } = await supabaseClient.auth.signUp({
+                    email: email,
+                    password: password,
+                });
+                if (error) throw error;
+                alert('🎉 Conta criada com sucesso! Verifique seu e-mail para confirmar o acesso.');
+            }
+            closeAuthModal();
+            checkUserSession();
+        } catch (err) {
+            alert('Erro de Autenticação: ' + err.message);
+        } finally {
+            submitBtn.disabled = false;
+            updateModalUI();
+        }
+    }
+
+    // Verificar se usuário já está logado ao carregar
+    async function checkUserSession() {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        const navButtons = document.getElementById('navButtons');
+        
+        if (session && navButtons) {
+            const userEmail = session.user.email.split('@')[0];
+            navButtons.innerHTML = `
+                <span class="text-xs font-semibold text-stone-700">Olá, <span class="text-amber-800">${userEmail}</span></span>
+                <button type="button" onclick="logout()" class="text-xs text-red-600 font-medium hover:underline cursor-pointer">Sair</button>
+            `;
+        }
+    }
+
+    async function logout() {
+        await supabaseClient.auth.signOut();
+        window.location.reload();
+    }
+
+    async function buscarLivros() {
+        const searchInput = document.getElementById('searchInput');
+        const query = searchInput ? searchInput.value.trim() : '';
+        if (!query) return;
+
+        const grid = document.getElementById('booksGrid');
+        const title = document.getElementById('sectionTitle');
+        
+        if (title) title.innerText = `Resultados para: "${query}"`;
+        if (grid) grid.innerHTML = '<p class="col-span-full text-center text-stone-500 py-8">🔎 Buscando no acervo brasileiro...</p>';
+
+        try {
+            const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&langRestrict=pt&maxResults=10`);
+            const data = await response.json();
+            
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            if (!data.items || data.items.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-8">
+                        <p class="text-stone-600 mb-3">Nenhum resultado encontrado para "${query}".</p>
+                        <button type="button" onclick="openAddBookModal()" class="bg-amber-700 hover:bg-amber-800 text-white text-xs font-semibold px-4 py-2 rounded-lg transition cursor-pointer">
+                            + Cadastrar "${query}" no Acervo Comunitário
+                        </button>
+                    </div>`;
+                return;
+            }
+
+            data.items.forEach(item => {
+                const info = item.volumeInfo || {};
+                let thumbnail = 'https://via.placeholder.com/128x192?text=Sem+Capa';
+                if (info.imageLinks && info.imageLinks.thumbnail) {
+                    thumbnail = info.imageLinks.thumbnail.replace('http://', 'https://');
                 }
+
+                const bookTitle = info.title || 'Título desconhecido';
+                const authors = info.authors ? info.authors.join(', ') : 'Autor desconhecido';
+
+                const cardHtml = `
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-stone-100 flex flex-col justify-between hover:shadow-md transition">
+                        <div>
+                            <img src="${thumbnail}" class="w-full h-48 object-cover rounded-lg mb-3 shadow-sm bg-stone-100" onerror="this.src='https://via.placeholder.com/128x192?text=Sem+Capa'">
+                            <h3 class="font-bold text-sm text-stone-900 line-clamp-1">${bookTitle}</h3>
+                            <p class="text-xs text-stone-500 mb-2 line-clamp-1">${authors}</p>
+                        </div>
+                        <button type="button" onclick="openAuthModal('login')" class="w-full bg-amber-700 hover:bg-amber-800 text-white font-medium text-xs py-2 rounded-md transition mt-2 cursor-pointer">
+                            + Adicionar à Estante
+                        </button>
+                    </div>
+                `;
+                grid.innerHTML += cardHtml;
+            });
+        } catch (err) {
+            if (grid) {
+                grid.innerHTML = `<p class="col-span-full text-center text-stone-500 py-8">Erro ao buscar livros. <button type="button" onclick="openAddBookModal()" class="text-amber-700 underline font-semibold cursor-pointer">Clique aqui para cadastrar manualmente</button>.</p>`;
             }
         }
+    }
 
-        async function handleRegisterBook(e) {
-            e.preventDefault();
-            const title = document.getElementById('newBookTitle').value;
-            const category = document.getElementById('newBookCategory').value;
+    async function handleRegisterBook(e) {
+        e.preventDefault();
+        const title = document.getElementById('newBookTitle').value;
+        const category = document.getElementById('newBookCategory').value;
 
-            alert(`🎉 "${title}" (${category}) cadastrado com sucesso no acervo do estantelivre!`);
-            closeAddBookModal();
-            document.getElementById('addBookForm').reset();
-        }
-    </script>
-</body>
-</html>
+        alert(`🎉 "${title}" (${category}) cadastrado com sucesso no acervo do estantelivre!`);
+        closeAddBookModal();
+        document.getElementById('addBookForm').reset();
+    }
+
+    // Executar verificação ao carregar a página
+    checkUserSession();
+</script>
