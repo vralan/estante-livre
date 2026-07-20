@@ -18,7 +18,7 @@
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 items-center">
                 
-                <!-- Logo & Links -->
+                <!-- Logo & Links de Navegação -->
                 <div class="flex items-center space-x-6 sm:space-x-8">
                     <span onclick="trocarAba('inicio')" class="text-xl sm:text-2xl font-bold text-amber-700 tracking-tight cursor-pointer">
                         estante<span class="text-stone-900">livre</span>
@@ -265,7 +265,10 @@
         }
 
         let currentUser = null;
-        let userCreditos = 1; // Sistema de Créditos Inicial (Estilo LivraLivro)
+        
+        // Regra de Negócio Segura: Novos leitores começam com 0 créditos
+        let userCreditos = 0; 
+        
         let userCidade = 'Vitória';
         let userUF = 'ES';
         let activeTradeId = null;
@@ -402,7 +405,7 @@
             trocarAba('inicio');
         }
 
-        // --- SISTEMA DE TROCAS E CRÉDITOS ---
+        // --- SISTEMA DE TROCAS E CRÉDITOS SEGURO ---
         function abrirModalSelecaoStatus(title, author, cover, category) {
             if (!currentUser) {
                 alert('Faça login para adicionar livros à sua estante!');
@@ -432,8 +435,15 @@
                     if (error) throw error;
                 }
 
-                const msg = statusChoice === 'TENHO' ? 'marcado como DISPONÍVEL PARA TROCA!' : 'adicionado à sua LISTA DE DESEJOS!';
-                alert(`📚 "${selectedBookForStatus.title}" ${msg}`);
+                // Bonificação / Regra de Troca: Cadastrar obra para troca concede +1 Crédito ao leitor
+                if (statusChoice === 'TENHO') {
+                    userCreditos++;
+                    checkUserSession();
+                    alert(`📚 "${selectedBookForStatus.title}" marcado como DISPONÍVEL PARA TROCA!\n🎉 Parabéns! Você ganhou +1 Crédito (🪙) por disponibilizar uma obra para a comunidade!`);
+                } else {
+                    alert(`📚 "${selectedBookForStatus.title}" adicionado à sua LISTA DE DESEJOS!`);
+                }
+
                 closeAddStatusModal();
             } catch (err) {
                 alert('Erro ao salvar livro: ' + err.message);
@@ -448,7 +458,7 @@
             }
 
             if (userCreditos < 1) {
-                alert('Você precisa de pelo menos 1 Crédito (🪙) para solicitar uma troca. Cadastre um livro na sua estante com a tag "Tenho para Trocar" para ganhar créditos!');
+                alert('⚠️ Você possui 0 Créditos.\n\nPara solicitar um livro, você precisa ter pelo menos 1 Crédito (🪙).\n\n💡 Como obter um crédito:\nCadastre um livro na sua estante marcado como "Disponível para Troca"!');
                 return;
             }
 
@@ -463,7 +473,7 @@
             };
 
             listaTrocasAtivas.unshift(novaSolicitacao);
-            userCreditos--; // Consome crédito de troca estilo LivraLivro
+            userCreditos--; // Consome o crédito da troca
             checkUserSession();
 
             document.getElementById('trocasBadge').innerText = listaTrocasAtivas.length;
@@ -495,7 +505,9 @@
         }
 
         function avaliarTroca(tradeId) {
-            alert('⭐ Obrigado! Avaliação de 5 estrelas enviada para o leitor. Crédito recreditado na conta do remetente!');
+            userCreditos++; // Ao confirmar recebimento / envio bem-sucedido, credita a troca
+            checkUserSession();
+            alert('⭐ Obrigado! Recebimento confirmado e avaliação de 5 estrelas enviada!');
         }
 
         function renderizarTrocas() {
