@@ -121,8 +121,8 @@
     <!-- Scripts da Aplicação -->
     <script>
         // Inicializar Supabase através das variáveis injetadas ou direct client
-        const supabaseUrl = window.env?.NEXT_PUBLIC_SUPABASE_URL || '';
-        const supabaseAnonKey = window.env?.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+        const supabaseUrl = 'https://ykhaxfhhzwndbmekwrqr.supabase.co';
+        const supabaseAnonKey = 'sb_publishable_-oOgyQodRHBcZEsISMpVhg_b3xLrulI' ;
         
         let supabaseClient = null;
         if (typeof supabase !== 'undefined' && supabaseUrl && supabaseAnonKey) {
