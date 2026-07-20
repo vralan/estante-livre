@@ -140,6 +140,9 @@
             supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         }
 
+        // Variável global para armazenar o usuário ativo
+        let currentUser = null;
+
         // Acervo Inicial
         const acervoLocal = [
             { id: 'l1', title: 'Dom Casmurro', author: 'Machado de Assis', category: 'Livro', cover: 'https://covers.openlibrary.org/b/id/9251896-M.jpg' },
@@ -199,6 +202,7 @@
                 if (currentAuthMode === 'login') {
                     const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
                     if (error) throw error;
+                    currentUser = data.user;
                     alert('✨ Bem-vindo(a) de volta ao estantelivre!');
                 } else {
                     const { data, error } = await supabaseClient.auth.signUp({ email, password });
@@ -220,18 +224,51 @@
             const { data: { session } } = await supabaseClient.auth.getSession();
             const navButtons = document.getElementById('navButtons');
             
-            if (session && navButtons) {
-                const userEmail = session.user.email.split('@')[0];
-                navButtons.innerHTML = `
-                    <span class="text-xs font-semibold text-stone-700">Olá, <span class="text-amber-800">${escapeHtml(userEmail)}</span></span>
-                    <button type="button" onclick="logout()" class="text-xs text-red-600 font-medium hover:underline cursor-pointer">Sair</button>
-                `;
+            if (session) {
+                currentUser = session.user;
+                if (navButtons) {
+                    const userEmail = session.user.email.split('@')[0];
+                    navButtons.innerHTML = `
+                        <span class="text-xs font-semibold text-stone-700">Olá, <span class="text-amber-800">${escapeHtml(userEmail)}</span></span>
+                        <button type="button" onclick="logout()" class="text-xs text-red-600 font-medium hover:underline cursor-pointer">Sair</button>
+                    `;
+                }
+            } else {
+                currentUser = null;
             }
         }
 
         async function logout() {
             if (supabaseClient) await supabaseClient.auth.signOut();
+            currentUser = null;
             window.location.reload();
+        }
+
+        // --- ADICIONAR LIVRO À ESTANTE DO USUÁRIO ---
+        async function adicionarAEstante(title, author, cover, category) {
+            if (!currentUser) {
+                alert('Faça login ou cadastre-se para adicionar livros à sua estante virtual!');
+                openAuthModal('login');
+                return;
+            }
+
+            try {
+                if (supabaseClient) {
+                    const { error } = await supabaseClient.from('user_books').insert({
+                        user_id: currentUser.id,
+                        google_book_id: 'custom_' + Date.now(),
+                        title: title,
+                        authors: author,
+                        thumbnail_url: cover,
+                        status: 'TENHO'
+                    });
+
+                    if (error) throw error;
+                }
+                alert(`📚 "${title}" foi adicionado com sucesso à sua estante!`);
+            } catch (err) {
+                alert('Erro ao salvar livro na estante: ' + err.message);
+            }
         }
 
         // --- RENDERIZAÇÃO E BUSCA ---
@@ -261,7 +298,7 @@
                             <h3 class="font-bold text-sm text-stone-900 line-clamp-1">${escapeHtml(item.title)}</h3>
                             <p class="text-xs text-stone-500 mb-2 line-clamp-1">${escapeHtml(item.author)}</p>
                         </div>
-                        <button type="button" onclick="openAuthModal('login')" class="w-full bg-amber-700 hover:bg-amber-800 text-white font-medium text-xs py-2 rounded-md transition mt-2 cursor-pointer">
+                        <button type="button" onclick="adicionarAEstante('${escapeHtml(item.title)}', '${escapeHtml(item.author)}', '${cover}', '${escapeHtml(item.category)}')" class="w-full bg-amber-700 hover:bg-amber-800 text-white font-medium text-xs py-2 rounded-md transition mt-2 cursor-pointer">
                             + Adicionar à Estante
                         </button>
                     </div>
