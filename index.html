@@ -27,7 +27,6 @@
                     <div class="hidden md:flex items-center space-x-6 text-sm font-medium text-stone-600">
                         <button onclick="trocarAba('inicio')" class="hover:text-amber-800 transition">Início</button>
                         
-                        <!-- Dropdown Explorar -->
                         <div class="relative group">
                             <button class="flex items-center hover:text-amber-800 transition py-2">
                                 Explorar <span class="ml-1 text-xs">▾</span>
@@ -42,6 +41,7 @@
                         <button onclick="trocarAba('trocas')" class="hover:text-amber-800 transition flex items-center">
                             Trocas 📦 <span id="trocasBadge" class="ml-1 bg-amber-100 text-amber-800 text-[10px] px-1.5 py-0.5 rounded-full font-bold">0</span>
                         </button>
+                        <button onclick="trocarAba('contato')" class="hover:text-amber-800 transition text-amber-800 font-semibold">💡 Ideias / Fale com Admin</button>
                     </div>
                 </div>
 
@@ -109,7 +109,7 @@
         </div>
     </main>
 
-    <!-- ABA 3: PAINEL DE TROCAS (COM CHAT E AVALIAÇÃO) -->
+    <!-- ABA 3: PAINEL DE TROCAS -->
     <main id="abaTrocas" class="hidden max-w-4xl mx-auto px-4 py-8">
         <h1 class="text-2xl font-bold text-stone-900 mb-2">Central de Trocas 📦</h1>
         <p class="text-sm text-stone-600 mb-6">Gerencie pedidos, converse com leitores e acompanhe envios.</p>
@@ -145,6 +145,37 @@
         </div>
     </main>
 
+    <!-- ABA 5: CONTATO COM ADMINISTRADOR -->
+    <main id="abaContato" class="hidden max-w-2xl mx-auto px-4 py-8">
+        <div class="bg-white rounded-2xl border border-stone-200 p-6 shadow-sm">
+            <h1 class="text-2xl font-bold text-stone-900 mb-2">Fale com o Administrador 📩</h1>
+            <p class="text-xs text-stone-500 mb-6">Tem sugestões de novas funcionalidades, encontrou algum problema ou quer propor parcerias? Mande uma mensagem para o Admin da comunidade!</p>
+
+            <form onsubmit="enviarMensagemAdmin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-stone-600 mb-1">Seu E-mail para Retorno</label>
+                    <input type="email" id="contatoEmail" placeholder="seuemail@exemplo.com" required class="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-stone-600 mb-1">Assunto / Categoria</label>
+                    <select id="contatoAssunto" class="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm">
+                        <option value="Sugestão de Funcionalidade">💡 Sugestão de Nova Funcionalidade</option>
+                        <option value="Relato de Erro / Bug">🐛 Relato de Erro / Dúvida</option>
+                        <option value="Suporte de Troca">📦 Suporte em uma Troca</option>
+                        <option value="Outro">Outro Assunto</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-stone-600 mb-1">Sua Mensagem / Ideia</label>
+                    <textarea id="contatoMensagem" rows="5" placeholder="Conte para o Admin o que gostaria de ver no estantelivre.com..." required class="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm focus:outline-none"></textarea>
+                </div>
+                <button type="submit" class="w-full bg-amber-700 hover:bg-amber-800 text-white font-semibold py-3 rounded-lg text-sm transition">
+                    Enviar Mensagem ao Admin
+                </button>
+            </form>
+        </div>
+    </main>
+
     <!-- MODAL DE CHAT DA TROCA -->
     <div id="chatModal" class="hidden fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl border border-stone-200 w-full max-w-lg p-6 relative flex flex-col h-[500px]">
@@ -153,12 +184,10 @@
             <h3 class="text-lg font-bold text-stone-900 mb-1">Conversa sobre a Troca 💬</h3>
             <p id="chatBookTitle" class="text-xs text-amber-800 font-semibold mb-3"></p>
 
-            <!-- Histórico de Mensagens -->
             <div id="chatMessages" class="flex-1 bg-stone-50 rounded-xl p-3 overflow-y-auto space-y-2 mb-3 border border-stone-200 text-xs">
                 <p class="text-stone-400 text-center py-4">Inicie a conversa para combinar endereço ou ponto de encontro...</p>
             </div>
 
-            <!-- Form de envio -->
             <form onsubmit="enviarMensagemChat(event)" class="flex gap-2">
                 <input type="text" id="chatInput" placeholder="Digite sobre o envio, código de rastreio..." required class="flex-1 px-3 py-2 rounded-lg border border-stone-300 text-xs focus:outline-none">
                 <button type="submit" class="bg-amber-700 hover:bg-amber-800 text-white px-4 py-2 rounded-lg text-xs font-semibold">Enviar</button>
@@ -166,7 +195,7 @@
         </div>
     </div>
 
-    <!-- Modal Status na Estante -->
+    <!-- Modal Status na Estante e Valoração em Créditos -->
     <div id="addStatusModal" class="hidden fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl border border-stone-200 w-full max-w-sm p-6 relative">
             <button type="button" onclick="closeAddStatusModal()" class="absolute top-4 right-4 text-stone-400 hover:text-stone-600 font-bold text-xl cursor-pointer">&times;</button>
@@ -175,10 +204,19 @@
             <p id="modalBookTitle" class="text-xs text-amber-800 font-semibold mb-4 line-clamp-1"></p>
 
             <div class="space-y-3">
+                <div class="bg-stone-50 p-3 rounded-xl border border-stone-200">
+                    <label class="block text-xs font-semibold text-stone-700 mb-1">Valor da Obra em Créditos (🪙)</label>
+                    <select id="modalBookCredits" class="w-full px-2.5 py-1.5 rounded-lg border border-stone-300 text-xs">
+                        <option value="1">1 Crédito (Comum / Edição Padrão)</option>
+                        <option value="2">2 Créditos (Especial / Capa Dura / Volumoso)</option>
+                        <option value="3">3 Créditos (Raro / Box Completo / Esgotado)</option>
+                    </select>
+                </div>
+
                 <button onclick="confirmarAdicionarEstante('TENHO')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white p-3 rounded-xl text-left transition flex items-center justify-between shadow-sm">
                     <div>
                         <p class="text-xs font-bold">🟢 Tenho para Trocar</p>
-                        <p class="text-[10px] text-emerald-100">Disponibilizar para troca (+1 crédito ao trocar)</p>
+                        <p class="text-[10px] text-emerald-100">Disponibilizar para troca na comunidade</p>
                     </div>
                     <span>➔</span>
                 </button>
@@ -186,7 +224,7 @@
                 <button onclick="confirmarAdicionarEstante('QUERO')" class="w-full bg-amber-700 hover:bg-amber-800 text-white p-3 rounded-xl text-left transition flex items-center justify-between shadow-sm">
                     <div>
                         <p class="text-xs font-bold">🟡 Quero Ler / Desejado</p>
-                        <p class="text-[10px] text-amber-100">Salvar na lista de desejos de leitura</p>
+                        <p class="text-[10px] text-amber-100">Salvar na minha lista de desejos</p>
                     </div>
                     <span>➔</span>
                 </button>
@@ -209,14 +247,24 @@
                     <label class="block text-xs font-semibold text-stone-600 mb-1">Autor / Mangaká</label>
                     <input type="text" id="newBookAuthor" placeholder="Ex: Gege Akutami" required class="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm">
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-stone-600 mb-1">Tipo de Obra</label>
-                    <select id="newBookCategory" class="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm">
-                        <option value="Livro">Livro Nacional / Traduzido</option>
-                        <option value="Mangá">Mangá</option>
-                        <option value="HQ">História em Quadrinhos (HQ)</option>
-                        <option value="Outro">Outro / Zine</option>
-                    </select>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-stone-600 mb-1">Tipo de Obra</label>
+                        <select id="newBookCategory" class="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm">
+                            <option value="Livro">Livro</option>
+                            <option value="Mangá">Mangá</option>
+                            <option value="HQ">HQ / Quadrinho</option>
+                            <option value="Outro">Outro</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-stone-600 mb-1">Valor em Créditos</label>
+                        <select id="newBookCredits" class="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm">
+                            <option value="1">1 Crédito 🪙</option>
+                            <option value="2">2 Créditos 🪙🪙</option>
+                            <option value="3">3 Créditos 🪙🪙🪙</option>
+                        </select>
+                    </div>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-stone-600 mb-1">URL da Capa (Opcional)</label>
@@ -265,10 +313,7 @@
         }
 
         let currentUser = null;
-        
-        // Regra de Negócio Segura: Novos leitores começam com 0 créditos
         let userCreditos = 0; 
-        
         let userCidade = 'Vitória';
         let userUF = 'ES';
         let activeTradeId = null;
@@ -277,12 +322,12 @@
         let listaTrocasAtivas = [];
 
         const acervoLocal = [
-            { id: 'l1', title: 'Dom Casmurro', author: 'Machado de Assis', category: 'Livro', cover: 'https://covers.openlibrary.org/b/id/9251896-M.jpg' },
-            { id: 'l2', title: 'A Hora da Estrela', author: 'Clarice Lispector', category: 'Livro', cover: 'https://covers.openlibrary.org/b/id/10523421-M.jpg' },
-            { id: 'l3', title: 'O Hobbit', author: 'J.R.R. Tolkien', category: 'Livro', cover: 'https://covers.openlibrary.org/b/id/8406786-M.jpg' },
-            { id: 'm1', title: 'Jujutsu Kaisen - Vol. 01', author: 'Gege Akutami', category: 'Mangá', cover: 'https://via.placeholder.com/128x192?text=Jujutsu+Kaisen' },
-            { id: 'h1', title: 'Turma da Mônica: Laços', author: 'Vitor e Lu Cafaggi', category: 'HQ', cover: 'https://via.placeholder.com/128x192?text=M%C3%B4nica+La%C3%A7os' },
-            { id: 'l4', title: 'Grande Sertão: Veredas', author: 'João Guimarães Rosa', category: 'Livro', cover: 'https://via.placeholder.com/128x192?text=Grande+Sert%C3%A3o' }
+            { id: 'l1', title: 'Dom Casmurro', author: 'Machado de Assis', category: 'Livro', credits: 1, cover: 'https://covers.openlibrary.org/b/id/9251896-M.jpg' },
+            { id: 'l2', title: 'A Hora da Estrela', author: 'Clarice Lispector', category: 'Livro', credits: 1, cover: 'https://covers.openlibrary.org/b/id/10523421-M.jpg' },
+            { id: 'l3', title: 'O Hobbit (Edição Especial)', author: 'J.R.R. Tolkien', category: 'Livro', credits: 2, cover: 'https://covers.openlibrary.org/b/id/8406786-M.jpg' },
+            { id: 'm1', title: 'Jujutsu Kaisen - Vol. 01', author: 'Gege Akutami', category: 'Mangá', credits: 1, cover: 'https://via.placeholder.com/128x192?text=Jujutsu+Kaisen' },
+            { id: 'h1', title: 'Turma da Mônica: Laços (Capa Dura)', author: 'Vitor e Lu Cafaggi', category: 'HQ', credits: 2, cover: 'https://via.placeholder.com/128x192?text=M%C3%B4nica+La%C3%A7os' },
+            { id: 'l4', title: 'Grande Sertão: Veredas', author: 'João Guimarães Rosa', category: 'Livro', credits: 1, cover: 'https://via.placeholder.com/128x192?text=Grande+Sert%C3%A3o' }
         ];
 
         let currentAuthMode = 'login';
@@ -297,6 +342,7 @@
             document.getElementById('abaEstante').classList.add('hidden');
             document.getElementById('abaTrocas').classList.add('hidden');
             document.getElementById('abaPerfil').classList.add('hidden');
+            document.getElementById('abaContato').classList.add('hidden');
 
             if (nomeAba === 'inicio') {
                 document.getElementById('abaInicio').classList.remove('hidden');
@@ -308,6 +354,8 @@
                 renderizarTrocas();
             } else if (nomeAba === 'perfil') {
                 document.getElementById('abaPerfil').classList.remove('hidden');
+            } else if (nomeAba === 'contato') {
+                document.getElementById('abaContato').classList.remove('hidden');
             }
         }
 
@@ -405,7 +453,15 @@
             trocarAba('inicio');
         }
 
-        // --- SISTEMA DE TROCAS E CRÉDITOS SEGURO ---
+        function enviarMensagemAdmin(e) {
+            e.preventDefault();
+            const assunto = document.getElementById('contatoAssunto').value;
+            alert(`📩 Sua mensagem sobre "${assunto}" foi enviada com sucesso para o Administrador! Obrigado por ajudar a construir o estantelivre.com.`);
+            document.getElementById('contatoMensagem').value = '';
+            trocarAba('inicio');
+        }
+
+        // --- SISTEMA DE TROCAS E CRÉDITOS ---
         function abrirModalSelecaoStatus(title, author, cover, category) {
             if (!currentUser) {
                 alert('Faça login para adicionar livros à sua estante!');
@@ -421,6 +477,8 @@
         async function confirmarAdicionarEstante(statusChoice) {
             if (!selectedBookForStatus || !currentUser) return;
 
+            const creditsChoice = parseInt(document.getElementById('modalBookCredits').value) || 1;
+
             try {
                 if (supabaseClient) {
                     const { error } = await supabaseClient.from('user_books').insert({
@@ -435,11 +493,10 @@
                     if (error) throw error;
                 }
 
-                // Bonificação / Regra de Troca: Cadastrar obra para troca concede +1 Crédito ao leitor
                 if (statusChoice === 'TENHO') {
-                    userCreditos++;
+                    userCreditos += creditsChoice;
                     checkUserSession();
-                    alert(`📚 "${selectedBookForStatus.title}" marcado como DISPONÍVEL PARA TROCA!\n🎉 Parabéns! Você ganhou +1 Crédito (🪙) por disponibilizar uma obra para a comunidade!`);
+                    alert(`📚 "${selectedBookForStatus.title}" marcado como DISPONÍVEL PARA TROCA (${creditsChoice} 🪙)!\n🎉 Parabéns! Você ganhou +${creditsChoice} Crédito(s) por disponibilizar esta obra para a comunidade!`);
                 } else {
                     alert(`📚 "${selectedBookForStatus.title}" adicionado à sua LISTA DE DESEJOS!`);
                 }
@@ -450,15 +507,17 @@
             }
         }
 
-        function solicitarTrocaDirect(title, author) {
+        function solicitarTrocaDirect(title, author, creditsNeeded) {
+            creditsNeeded = creditsNeeded || 1;
+
             if (!currentUser) {
                 alert('Faça login para solicitar a troca deste livro!');
                 openAuthModal('login');
                 return;
             }
 
-            if (userCreditos < 1) {
-                alert('⚠️ Você possui 0 Créditos.\n\nPara solicitar um livro, você precisa ter pelo menos 1 Crédito (🪙).\n\n💡 Como obter um crédito:\nCadastre um livro na sua estante marcado como "Disponível para Troca"!');
+            if (userCreditos < creditsNeeded) {
+                alert(`⚠️ Esta obra requer ${creditsNeeded} Crédito(s) (🪙), mas você tem apenas ${userCreditos}.\n\n💡 Como obter mais créditos:\nCadastre livros na sua estante marcados como "Disponível para Troca"!`);
                 return;
             }
 
@@ -466,6 +525,7 @@
                 id: 'troca_' + Date.now(),
                 title: title,
                 author: author,
+                credits: creditsNeeded,
                 solicitante: currentUser.email.split('@')[0],
                 cidade: `${userCidade}-${userUF}`,
                 data: new Date().toLocaleDateString('pt-BR'),
@@ -473,11 +533,11 @@
             };
 
             listaTrocasAtivas.unshift(novaSolicitacao);
-            userCreditos--; // Consome o crédito da troca
+            userCreditos -= creditsNeeded;
             checkUserSession();
 
             document.getElementById('trocasBadge').innerText = listaTrocasAtivas.length;
-            alert(`📦 Solicitação de troca enviada para "${title}"! (1 Crédito utilizado)`);
+            alert(`📦 Solicitação de troca enviada para "${title}"! (${creditsNeeded} Crédito(s) utilizado(s))`);
             trocarAba('trocas');
         }
 
@@ -505,9 +565,7 @@
         }
 
         function avaliarTroca(tradeId) {
-            userCreditos++; // Ao confirmar recebimento / envio bem-sucedido, credita a troca
-            checkUserSession();
-            alert('⭐ Obrigado! Recebimento confirmado e avaliação de 5 estrelas enviada!');
+            alert('⭐ Obrigado! Recebimento confirmado e avaliação enviada!');
         }
 
         function renderizarTrocas() {
@@ -530,7 +588,7 @@
                 const card = `
                     <div class="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
-                            <span class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold uppercase mb-1 inline-block">${troca.status}</span>
+                            <span class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold uppercase mb-1 inline-block">${troca.status} (${troca.credits || 1} 🪙)</span>
                             <h3 class="font-bold text-base text-stone-900">${escapeHtml(troca.title)}</h3>
                             <p class="text-xs text-stone-500">Leitor: <span class="font-semibold text-stone-800">${troca.solicitante}</span> (${troca.cidade}) em ${troca.data}</p>
                         </div>
@@ -594,10 +652,14 @@
 
             lista.forEach(item => {
                 const cover = item.cover || 'https://via.placeholder.com/128x192?text=Sem+Capa';
+                const credits = item.credits || 1;
                 const card = `
                     <div class="bg-white p-4 rounded-xl shadow-sm border border-stone-100 flex flex-col justify-between hover:shadow-md transition">
                         <div>
-                            <span class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold uppercase mb-2 inline-block">${escapeHtml(item.category || 'Obra')}</span>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold uppercase">${escapeHtml(item.category || 'Obra')}</span>
+                                <span class="text-[10px] bg-stone-100 text-stone-800 px-1.5 py-0.5 rounded font-bold">${credits} 🪙</span>
+                            </div>
                             <img src="${cover}" class="w-full h-48 object-cover rounded-lg mb-3 shadow-sm bg-stone-100" onerror="this.src='https://via.placeholder.com/128x192?text=Sem+Capa'">
                             <h3 class="font-bold text-sm text-stone-900 line-clamp-1">${escapeHtml(item.title)}</h3>
                             <p class="text-xs text-stone-500 mb-2 line-clamp-1">${escapeHtml(item.author)}</p>
@@ -606,8 +668,8 @@
                             <button type="button" onclick="abrirModalSelecaoStatus('${escapeHtml(item.title)}', '${escapeHtml(item.author)}', '${cover}', '${escapeHtml(item.category)}')" class="w-full bg-amber-700 hover:bg-amber-800 text-white font-medium text-xs py-2 rounded-md transition cursor-pointer">
                                 + Adicionar à Estante
                             </button>
-                            <button type="button" onclick="solicitarTrocaDirect('${escapeHtml(item.title)}', '${escapeHtml(item.author)}')" class="w-full bg-stone-100 hover:bg-stone-200 text-stone-800 font-semibold text-[11px] py-1.5 rounded-md transition cursor-pointer">
-                                📦 Solicitar Troca (1 🪙)
+                            <button type="button" onclick="solicitarTrocaDirect('${escapeHtml(item.title)}', '${escapeHtml(item.author)}', ${credits})" class="w-full bg-stone-100 hover:bg-stone-200 text-stone-800 font-semibold text-[11px] py-1.5 rounded-md transition cursor-pointer">
+                                📦 Solicitar Troca (${credits} 🪙)
                             </button>
                         </div>
                     </div>
@@ -648,6 +710,7 @@
                             title: doc.title,
                             author: doc.author_name ? doc.author_name[0] : 'Autor desconhecido',
                             category: 'Livro',
+                            credits: 1,
                             cover: doc.cover_i ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg` : null
                         };
                         if (!resultados.some(r => r.title.toLowerCase() === apiBook.title.toLowerCase())) {
@@ -666,6 +729,7 @@
             const title = document.getElementById('newBookTitle').value;
             const author = document.getElementById('newBookAuthor').value;
             const category = document.getElementById('newBookCategory').value;
+            const credits = parseInt(document.getElementById('newBookCredits').value) || 1;
             const cover = document.getElementById('newBookCover').value;
 
             acervoLocal.unshift({
@@ -673,10 +737,11 @@
                 title: title,
                 author: author,
                 category: category,
+                credits: credits,
                 cover: cover || null
             });
 
-            alert(`🎉 "${title}" (${category}) cadastrado com sucesso!`);
+            alert(`🎉 "${title}" (${category} - ${credits} 🪙) cadastrado com sucesso!`);
             closeAddBookModal();
             document.getElementById('addBookForm').reset();
             document.getElementById('searchInput').value = title;
